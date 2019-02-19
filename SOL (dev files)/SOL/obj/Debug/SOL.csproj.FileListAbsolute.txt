@@ -20,3 +20,5 @@ C:\Users\shado\source\repos\SOL\obj\Debug\SOL.exe.manifest
 C:\Users\shado\source\repos\SOL\obj\Debug\SOL.application
 C:\Users\shado\source\repos\SOL\obj\Debug\SOL.exe
 C:\Users\shado\source\repos\SOL\obj\Debug\SOL.pdb
+C:\Users\shado\source\repos\SOL\obj\Debug\SOL.csprojAssemblyReference.cache
+C:\Users\shado\source\repos\SOL\obj\Debug\SOL.TrustInfo.xml
