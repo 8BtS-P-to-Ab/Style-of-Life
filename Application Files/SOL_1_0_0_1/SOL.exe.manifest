@@ -53,17 +53,10 @@
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SOL.exe" size="203776">
       <assemblyIdentity name="SOL" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
-      <hash>
-        <dsig:Transforms>
-          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-        </dsig:Transforms>
-        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>FbYWtu6TpeCn2Kpbv11fWkEZriHs+cyvIhZkrIFteKQ=</dsig:DigestValue>
-      </hash>
     </dependentAssembly>
   </dependency>
-  <file name="Resources\Counter\test.txt" size="4" />
-  <file name="Resources\Programming Logs.txt" size="18929" />
+  <file name="Resources\Counter\test.txt" size="4" writeableType="applicationData" />
+  <file name="Resources\Programming Logs.txt" size="18929" writeableType="applicationData" />
   <file name="Resources\SOLICO.ico" size="11830">
     <hash>
       <dsig:Transforms>
@@ -73,20 +66,12 @@
       <dsig:DigestValue>hx0wkmWnMOpWyvsR4W1KARqHVETFoNWwcetcHtUaf6M=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="Resources\Updates\_example.txt" size="913" />
-  <file name="Resources\Updates\_Other.txt" size="969" />
-  <file name="Resources\Updates\Counter.txt" size="87" />
-  <file name="Resources\Updates\Discord Translator.txt" size="31" />
-  <file name="Resources\Updates\Mass Renamer.txt" size="1266" />
-  <file name="SOL.exe.config" size="189">
-    <hash>
-      <dsig:Transforms>
-        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-      </dsig:Transforms>
-      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>rl5/qDc7Jz+tB+BIbOv9iMGPlRe6YJwrjmU09dnlPcs=</dsig:DigestValue>
-    </hash>
-  </file>
+  <file name="Resources\Updates\_example.txt" size="913" writeableType="applicationData" />
+  <file name="Resources\Updates\_Other.txt" size="969" writeableType="applicationData" />
+  <file name="Resources\Updates\Counter.txt" size="87" writeableType="applicationData" />
+  <file name="Resources\Updates\Discord Translator.txt" size="31" writeableType="applicationData" />
+  <file name="Resources\Updates\Mass Renamer.txt" size="1266" writeableType="applicationData" />
+  <file name="SOL.exe.config" size="189" />
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <application>
       <!-- A list of the Windows versions that this application has been tested on
