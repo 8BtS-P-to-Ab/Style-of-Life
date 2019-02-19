@@ -1,0 +1,284 @@
+﻿If you're a user and reading this, this stuff is for developers.
+
+------------------------------------------------------------How my commenting scheme works (some comments may be out of date)------------------------------------------------------------
+To start with, only after finishing coding and in the 'clean-up' phase, I find the longest string of code in a single line that isn't debugging and tab twice, from there I add a commnet 
+and use SHIFT+ALT+DIRECTION to create a nice wall of comments.
+
+Everything like an 'if', 'for', 'while', e.c.t. statement have a "T" placed on the comment line where that statement's open bracket is ("{") and a "|" all the way down to where the closing
+bracket is, where at the closing bracket a e.g."e)" is appended to the "|" to signify that's the end of that if statement. There are other types of enders, check the cheat sheet.
+
+Obviously there's tabbing included within the commenting scheme. The first tab is no tab, so the "|" or "T" symbol is placed directly after the comment (making it "//Tstatement") while 
+the second tabbing is having two spaces or two dashes ("--") after the first tabbed section with the comment after that (making "//|--comment"), the amount of spaces or dashes increases 
+by 1 each new tab level. However the "|", "T" and other special 'tab indicator' symbols override the possition of one dash, for aligning reasons (making "//|-Tif statement").
+
+Here's a cheat sheet of all the start, mid, end and other symbols:
+Starts & tab indicators (all replace a dash)				: T = start of a statement, | = a wall (the tab index of that area)
+Mids					(some replace a wall)				: \c) ('if else' or 'switch'), |c)
+Ends					(none replace a dash)				: |e) = end, |L) = for loop end, |W) = while loop end, |INF) = end of infinite loop but is not the break point
+Special					(some replace at least one dash)	: |-|>>>END; = end of infinite loop/break point (replaces all dashes, but only dashes, to the tab index of the infinite loop)
+
+For example (from CountGroupIntAmount() of Splitter.cs):
+//create a global itterator
+//create a counter
+//create a global variable for storing the previous array possition (really it's the current)
+//create a global variable for storing the next array possition
+//
+//
+//Tloop INFINITE
+//|--get the current item
+//|--get the next item in the array
+//|
+//|
+//|-Tif the next item is the same as the current item
+//|-|---don't count, just go to the next item
+//|-\c)otherwise, if the current item is not the same as the next (e.g. 1 != 3)
+//|-|---count the previous set, but don't count the current set - yet
+//|-|---itterate to the next item
+//|-|
+//|-|e)
+//|
+//|
+//|-Tif the current itteration is at the end of the array
+//|-|---count the CURRENT set, as the previous set has already been counted
+//|>|>>>END;
+//|-|e)
+//|INF)
+//
+//return the result
+
+												Why comment like this? Sure it looks hella cool, but it's very impractical to do while coding.
+Well that's the thing, as I said at the start, this is ONLY for the 'clean-up' phase of a project. The idea is that it's to make it as painless as possible for any other development team
+to pickup the project; instead of having them waste hours trying to figure out how your spagetee code works, YOU waste about half - if not a quater - of that time figuring it out for 
+them. Obviosuly this is only good for projects that are open source, or that you know has a high chance of other people coming around and working on the project - say like a game. It's 
+also just a nice gesture to newbie coders who have no idea what the fuck their doing, gives them a nice head start and makes the entire learning process a bit less daunting. I mean i made
+this entire scheme for an open source project - SOL - so I can only hope that it does it's job well enough to make up for the faf you deal with when editing code.
+
+
+------------------------------------------------------------How you use the update logs system------------------------------------------------------------
+The update logging system is set up in a way that all you have to do is type out a .txt file in the updates folder with only 4 things you have to keep in mind.
+1. \s states that the text before the '\s' is the version number which will appear in the list.		e.g. 1.0.2.5\s
+2. \i states that the text before the '\i' is the title of a group.									e.g. Added a toolstrip\i
+																										 Added the about and guide pages
+3. \e (belonging on its own line) states that it's the end of the \s or \i							e.g. 2	\e
+4  all text inbetween a \e is normal text that will appear in the log								e.g. Added warnings
+I also recommend numbering which line each '\e' belongs to											e.g. 1\e
+You can also right comments that the reader wont read as long as it's outside of the '\s' area		e.g. this would be a comment
+
+Have a look at the existing logs and compare it to the end result if you're still confused.
+
+
+//---------------------------------LOGIC TESTING 1 - GetAdditionType STATE 0 (INFINITE ALPHABETICAL NUMBERING ALGORITHM)---------------------------------//
+        returned A-Z
+
+        on c=27
+        inner for loop itteration 1 test[1] = 1, test[0] = 1, test.length = 2
+        inner for loop itteration 2 does nothing as test[1] != 27
+        returned "AA" (from code: "1,1")
+
+		onc c=28
+		inner for loop itteration 1 test[1] = 1, test[0] = 2
+        inner for loop itteration 2 does nothing as test[1] != 27
+		returned "AB" (from code: "1,2")
+
+        on c=54
+        inner for loop itteration 1 test[1] = 2, test[0]=1
+        inner for loop itteration 2 does nothing as test[1] != 27
+        returned "BA" (from code: "2,1")
+
+        on c=81
+        inner for loop itteration 1 test[1] = 3, test[0]=1
+        inner for loop itteration 2 does nothing as test[1] != 27
+        returned "CA" (from code: "3,1")
+
+        ...
+
+        on c=702
+        inner for loop itteration 1 test[1] = 26, test[0]=1
+        inner for loop itteration 2 does nothing as test[1] != 27
+        returned "ZA" (from code: "26,1")
+
+        on c=729
+        inner for loop itteration 1 test[1] = 27, test[0]=1
+        inner for loop itteration 2 test[1] = 1,  test[2]=1, test.length = 3
+        returned "AAA" (from code: "1,1,1")
+
+        on c=756
+        inner for loop itteration 1 test[1] = 2, test[0] = 1 (was 27)
+        inner for loop itteration 2 does nothing as test[1] != 27 (is 2)
+        inner for loop itteration 3 does nothing as test[2] != 27 (is 1)
+        returned "ABA" (from code: "1,2,1")
+
+
+//------------------------------ALTERNATIVE VERSIONING 1 - GetAdditionType STATE 0 (FINITE ALPHABETICAL NUMBERING ALGORITHM)-----------------------------//
+        ushort i = 1;
+        ushort  ii = 0;
+        ushort iii = 0;
+        ushort  iv = 0;
+        int.TryParse(limit, out int locLim);
+
+        //this one works simularly to the way I program clocks and timers in games like "Point and Tick". If one variable reaches a certain integer
+        //then another one is itterated and that previous variable is reset, as such creating an infinite loop untill broke - and counting accurately.
+        for (int c = 0; c < locLim; c++)                                    //loop untill the limit is reached
+        {                                                                   //for the first 26 loops, only single letters are returned (A-Z)
+            if (i == 27)                                                    //if the itteration is at 26 (past "Z" i.e. at "AA")
+            {                                                               //
+                ii++;                                                       //itterate the second letter (1=A, 0=dont put any)
+                i = 1;                                                      //reset the first letter to A
+                                                                            //
+            }                                                               //
+                                                                            //
+            if (ii == 27)                                                   //
+            {                                                               //
+                iii++;                                                      //itterate the third letter
+                ii = 1;                                                     //
+                                                                            //
+            }                                                               //
+                                                                            //
+            if (iii == 27)                                                  //
+            {                                                               //
+                iv++;                                                       //itterate the fourth letter
+                iii = 1;                                                    //
+                                                                            //
+            }                                                               //
+                                                                            //
+            if (iv == 28)                                                   //
+            {                                                               //if letter 4 is more than 26, send an error
+                i = 0;                                                      //
+                ii = 0;                                                     //
+                iii = 0;                                                    //
+                iv = 0;                                                     //
+                                                                            //
+            }                                                               //
+                                                                            //
+                                                                            //
+            if (i == 0)                                                     //
+            {                                                               //if an error occured
+                yield return "An error occured, " +                         //report it
+                    "i=0. This method only supports ~530 738 files";        //
+                                                                            //
+            }                                                               //
+                                                                            //
+            //returns                                                       //
+            if (i >= 1 && ii == 0)                                          //
+            {                                                               //if only the first letter should be returned
+                yield return char.ConvertFromUtf32(i - 1 +  65);            //return only 1 letter
+                                                                            //
+            }                                                               //
+                                                                            //
+            if (ii >= 1 && iii == 0) {                                      //if 2 letters should be returned
+                string conc = char.ConvertFromUtf32(ii - 1 + 65);           //get the second letter (A-)
+                conc += char.ConvertFromUtf32(i - 1 + 65);                  //add the first letter  (-A)
+                                                                            //
+                yield return conc;                                          //return
+                                                                            //
+            }                                                               //
+                                                                            //
+            if (iii >= 1 && iv == 0)                                        //
+            {                                                               //if 3 letters should be returned
+                string conc = char.ConvertFromUtf32(iii - 1 + 65);          //get the thrid letter  (A--)
+                conc += char.ConvertFromUtf32(ii - 1 + 65);                 //add the second letter (-A-)
+                conc += char.ConvertFromUtf32(i - 1 + 65);                  //add the first letter  (--A)
+                                                                            //
+                yield return conc;                                          //return
+                                                                            //
+            }                                                               //
+                                                                            //
+            if (iv >= 1)                                                    //
+            {                                                               //if 4 letters should be returned
+                string conc = char.ConvertFromUtf32(iv + 65);               //get the fourth letter (A---)
+                conc += char.ConvertFromUtf32(iii - 1 + 65);                //add the third letter  (-A--)
+                conc += char.ConvertFromUtf32(ii - 1 + 65);                 //add the second letter (--A-)
+                conc += char.ConvertFromUtf32(i - 1 + 65);                  //add the first letter  (---A)
+                                                                            //
+                yield return conc;                                          //return
+                                                                            //
+            }                                                               //
+                                                                            //
+            i++;                                                            //itterate to the next letter
+        }
+
+        
+//---------------------------------MATHMATICAL REASONING 1 - GetAdditionType STATE 0 (ALPHABETICAL NUMBERING ALGORITHM)----------------------------------//
+        (row count*(column possition)) + (column possition1) + row possition - 1
+        column 0
+                  (0001 - 0026) or (26*00)+01 - (26*01)+00
+        (A-Z)
+        column 1
+        A(A-Z)    (0027 - 0053) or (26*001)+001 - (26*002)+001
+        B(A-Z)    (0054 - 0080) or (26*002)+002 - (26*003)+002
+        C(A-Z)    (0081 - 0107) or (26*003)+003 - (26*004)+003
+        D(A-Z)    (0108 - 0134) or (26*004)+004 - (26*005)+004
+        E(A-Z)                     (26*005)+005 - (26*006)+005
+        F(A-Z)                     (26*006)+006 - (26*007)+006
+        G(A-Z)                     (26*007)+007 - (26*008)+007
+        H(A-Z)                     (26*008)+008 - (26*009)+008
+        I(A-Z)                     (26*009)+009 - (26*010)+009
+        J(A-Z)                     (26*010)+010 - (26*011)+010
+        K(A-Z)                     (26*011)+011 - (26*012)+011
+        L(A-Z)                     (26*012)+012 - (26*013)+012
+        M(A-Z)                     (26*013)+013 - (26*014)+013
+        N(A-Z)                     (26*014)+014 - (26*015)+014
+        O(A-Z)                     (26*015)+015 - (26*016)+015
+        P(A-Z)                     (26*016)+016 - (26*017)+016
+        Q(A-Z)                     (26*017)+017 - (26*018)+017
+        R(A-Z)                     (26*018)+018 - (26*019)+018
+        S(A-Z)                     (26*019)+019 - (26*020)+019
+        T(A-Z)                     (26*020)+020 - (26*021)+020
+        U(A-Z)                     (26*021)+021 - (26*022)+021
+        V(A-Z)                     (26*022)+022 - (26*023)+022
+        W(A-Z)                     (26*023)+023 - (26*024)+023
+        X(A-Z)                     (26*024)+024 - (26*025)+024
+        Y(A-Z)    (0675 - 0701)    (26*025)+025 - (26*026)+025   
+        Z(A-Z)    (0702 - 0728) or (26*026)+026 - (26*027)+026
+        AA(A-Z)   (0729 - 0755) or (26*027)+027 - (26*028)+027
+        A-(A-Z)                                            
+        AZ(A-Z)                    (26*052)+052 - (26*053)+052
+        BA(A-Z)                    (26*053)+053 - (26*054)+053
+        B-(A-Z)                                            
+        BZ(A-Z)                    (26*078)+078 - (26*079)+078
+        column 2
+        CA(A-Z)                    (26*079)+079 - (26*080)+079
+        C-(A-Z)
+        CZ(A-Z)                    (26*104)+104 - (26*105)+104
+        BA(A-Z)                    (26*105)+105 - (26*106)+105
+        B-(A-Z)
+        BZ(A-Z)                    (26*130)+130 - (26*131)+130
+        DA(A-Z)                    (26*131)+131 - (26*132)+131
+        D-(A-Z)
+        EA(A-Z)                    (26*156)+156 - (26*157)+156
+        E-(A-Z)
+        FA(A-Z)                    (26*182)+182 - (26*183)+182
+        GA                         (26*208)+208 - (26*209)+208
+        HA                         (26*234)+234 - (26*235)+234
+        I...                       (26*260)+260 - (26*261)+260
+        J                          (26*286)+286 - (26*287)+286
+        K                          (26*312)+312 - (26*313)+312
+        L                          (26*338)+338 - (26*339)+338
+        M                          (26*364)+364 - (26*365)+364
+        N                          (26*390)+390 - (26*391)+390
+        O                          (26*416)+416 - (26*417)+416
+        P                          (26*442)+442 - (26*443)+442
+        Q                          (26*468)+468 - (26*469)+468
+        R                          (26*494)+494 - (26*495)+494
+        S                          (26*520)+520 - (26*520)+520
+        T                          (26*546)+546 - (26*547)+546
+        U                          (26*572)+572 - (26*573)+572
+        V                          (26*598)+598 - (26*599)+598
+        W                          (26*624)+624 - (26*625)+624
+        X                          (26*650)+650 - (26*651)+650 i.e. 26(third letter[row])*26(second[column{"A"}])*25(first[column{"A"}])+(26*25)
+        Y                          (26*676)+676 - (26*677)+676      = (26*650)+650
+        ZA(A-Z)                    (26*702)+702 - (26*703)+702
+        ZZ(A-Z) (18,981 - 19 007)or(26*703)+703 - (26*704)+703
+        AAA(A-Z)                   (26*704)+704 - (26*705)+704
+        AA-(A-Z)
+        AAZ(A-Z)
+        column 3?
+        ABA(A-Z)
+        ABB(A-Z)
+        AB-(A-Z)
+        ABZ(A-Z)
+        A--(A-Z)
+        AZZ(A-Z)
+        BAA(A-Z)
+        ---(A-Z)
+        ZZZ(A-Z)                  (26*(26*27*28))+19 656 - (26*((26*27*28)+1))+19 656
