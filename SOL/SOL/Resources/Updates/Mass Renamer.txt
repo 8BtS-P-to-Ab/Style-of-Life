@@ -1,0 +1,25 @@
+﻿1.0.2.5\s
+Added a warning that there is currently no input sanitisation
+Fixed a crash that would occur if the file that's being renamed already exists
+Fixed a problem with mass renaming a folder multiple times, resulting in only one file being renamed
+Added the Ability to disable renaming, allowing users to be able to use the "add extra text" and "change extention" functions without chaing the selected file's names
+Added the ability to change a file extention during renaming
+Fixed the "add extra text" box, it's now actually optional like it says
+1\e
+
+(bellow is from memory)
+1.0.1.1\s
+Added a toolstrip\i
+Added the about and guide pages
+Ability to count with letters e.g. A, B, C...AA, AB, AC
+Added random file selection
+Added the ability to disable warnings and an exit button
+Added the ability to select files alphabraically
+11\e
+Fixed counting method to be more flexable for future updates and the planned 'modding phase'
+Added a few more warnings with options for the user, older warnings are now updated with options too
+Fixed the mass rename button, it can no longer be pressed without any text in the main box
+Fixed text not dissapearing when any of the boxes are clicked
+Added error checking and reporting
+Added warnings
+10\e

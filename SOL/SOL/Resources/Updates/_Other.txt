@@ -1,0 +1,32 @@
+﻿Planned Features (sorted by upcoming)\s
+Counter:\i
+Empty
+\e
+
+Discord Translator:\i
+Empty
+\e
+
+Mass renamer:\i
+progress bar
+Mass folder renaming
+add an ability to remove x characters from every file (mostly for stripping existing extentions), which is already done by the extention box anyway.
+path sanitisation\i
+disallowing stuff like '/' '\n' e.c.t. to be typed in the textbox [use regex, probably one already exists] and only allow selection of 'verified' files (see openFileDialog1 options)
+6		\e
+More numbering & selection options\i
+the ability to change numbering style from 1,2,3,4,20,100 to 001,002,003,004,020,100
+hexadecimal numbering
+the ability to adjust the starting point of the number/letter/custom collection e.g. starting at 12 rather than 1
+regular expression type selection
+9		\e
+undo
+multithreading
+2	\e
+1\e
+
+Known bugs\s
+General:\i
+Need more checks for stuff like access violations (file in use) and such.
+29\e
+28\e
