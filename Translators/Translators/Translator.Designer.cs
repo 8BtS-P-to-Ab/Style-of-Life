@@ -115,9 +115,9 @@
             // 
             // InstalledMngRsr
             // 
+            this.InstalledMngRsr.Controls.Add(this.AddBtn);
             this.InstalledMngRsr.Controls.Add(this.InstalledAddResizer);
             this.InstalledMngRsr.Controls.Add(this.UninstallBtn);
-            this.InstalledMngRsr.Controls.Add(this.AddBtn);
             this.InstalledMngRsr.Location = new System.Drawing.Point(12, 28);
             this.InstalledMngRsr.Name = "InstalledMngRsr";
             this.InstalledMngRsr.Size = new System.Drawing.Size(290, 281);
