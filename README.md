@@ -16,7 +16,5 @@ If you're adding new stuff onto someone elses branch (that you can't add as it's
 
 The program has a relatively easy to use update logging system, **make sure you read the _'programming logs'_ text file** on how to use the updates system - it also explains my commenting style if you can't wrap your head around how it works for some reason, no you don't have to comment in the same style.
 
-The installer creates the executable here:
-%AppData%\..\Local\Apps\2.0\Y0KZ27J0.QYW\VDABDBGK.RO3\sol...tion_0000000000000000_0001.0000_42e09a81965087f8
-The resources folder it reads from doesn't have all the data in it (for some reason it's stored in some other random folder within the '2.0' folder) once you put it in there, it seems to work fine.
-Just to get it to install I had to exclude everything from having a hash.
+If your addition is a translator, please add it as a branch here: https://github.com/shadow999999/Translators-SOL
+The additions update will hit the mass renamer when the next update comes, the 'updates' update.
