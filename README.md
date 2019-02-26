@@ -3,8 +3,8 @@ Style Of Life (SOL) is an open source program with the goal of providing excessi
 ---
 If you're a user:
 
-##**Currently the installer is not working properly (because the manifests visual stuio generates are being wack), SO DON'T USE IT**.
-Instead go into the "SOL (dev files)\SOL\bin\Debug" folder and use the .exe that's there for now.
+##**Currently the installer is not working properly (because the manifests visual stuio generates are being wack)** so there currently isn't any.
+Instead go into the "SOL (dev files)\SOL\bin\Debug" folder and use the executable that's there for now.
 
 
 ---

@@ -1,32 +1,53 @@
 ﻿Planned Features (sorted by upcoming)\s
+
+SOL\i
+Migrate all 'baked in' programs to the github server and remove all 'baked in' programs from the master branch
+Comments
+Search bar
+Find a way to only download a branches .zip file so that the useless '.git' folder isn't coppied too
+Overhaul update logging system to work with the additions update
+Add ability for SOL to automatically check for updates
+Add ability to force SOL to check for updates
+Add ability to force SOL to check for updates of installed additions
+fix the installer
+3\e
+
 Counter:\i
 Empty
-\e
+12\e
 
 Discord Translator:\i
 Empty
-\e
+16\e
+
+Translators:\i
+Fix the about page
+22\e
 
 Mass renamer:\i
-progress bar
+Add additions support
+Progress bar
 Mass folder renaming
 add an ability to remove x characters from every file (mostly for stripping existing extentions), which is already done by the extention box anyway.
 path sanitisation\i
 disallowing stuff like '/' '\n' e.c.t. to be typed in the textbox [use regex, probably one already exists] and only allow selection of 'verified' files (see openFileDialog1 options)
-6		\e
+25		\e
 More numbering & selection options\i
 the ability to change numbering style from 1,2,3,4,20,100 to 001,002,003,004,020,100
 hexadecimal numbering
 the ability to adjust the starting point of the number/letter/custom collection e.g. starting at 12 rather than 1
 regular expression type selection
-9		\e
+28		\e
 undo
 multithreading
-2	\e
+20	\e
 1\e
 
 Known bugs\s
-General:\i
+General (ALL):\i
 Need more checks for stuff like access violations (file in use) and such.
-29\e
-28\e
+40\e
+SOL\i
+Downloading an addition will always fail to delete the junk (see item 2 of Planned>SOL)
+43\e
+39\e

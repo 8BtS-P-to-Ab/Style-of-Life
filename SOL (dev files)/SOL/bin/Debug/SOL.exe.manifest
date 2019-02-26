@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <asmv1:assembly xsi:schemaLocation="urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd" manifestVersion="1.0" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1" xmlns="urn:schemas-microsoft-com:asm.v2" xmlns:asmv2="urn:schemas-microsoft-com:asm.v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:co.v1="urn:schemas-microsoft-com:clickonce.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:co.v2="urn:schemas-microsoft-com:clickonce.v2">
-  <asmv1:assemblyIdentity name="SOL.exe" version="1.0.0.1" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
+  <asmv1:assemblyIdentity name="SOL.exe" version="1.1.1.2" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
   <description asmv2:iconFile="Resources\SOLICO.ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
@@ -51,11 +51,130 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SOL.exe" size="203776">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="LibGit2Sharp.dll" size="420864">
+      <assemblyIdentity name="LibGit2Sharp" version="0.26.0.0" publicKeyToken="7CBDE695407F0333" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>PMoSlmThCuqv4Rg6u0C3rVRJCKoKpUg7s4uDAimg3M8=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SOL.exe" size="97280">
       <assemblyIdentity name="SOL" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
     </dependentAssembly>
   </dependency>
-  <file name="Resources\Counter\test.txt" size="4" writeableType="applicationData" />
+  <file name="lib\alpine-x64\libgit2-572e4d8.so" size="1376024">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>IH1rvmf9TZq7Z8ovCDdTmRPHyOC8r2x4lSgwStKKxrs=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="lib\debian.9-x64\libgit2-572e4d8.so" size="1353760">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>AxAHpEBylifN1BMdSYyO7Y7WFXN0/ByL6Sc1uF/cl08=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="lib\fedora-x64\libgit2-572e4d8.so" size="1198096">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>ho+gy2poPm8enSK0vZJrvQgOW/3ZP3CSI4TKr/0lUEU=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="lib\linux-x64\libgit2-572e4d8.so" size="1351699">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>1PFqzkTTFiUDM50AihNMIHl+rHz4NvKMDSOLA+9qZsY=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="lib\osx\libgit2-572e4d8.dylib" size="2015240">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>/lOVMgNZOtn5wC+7o6jPMQR+G+0KGTynfudfabam+Y4=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="lib\rhel-x64\libgit2-572e4d8.so" size="1283536">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>ozLGgI7KBFEEglhpTbsjugBAecMC4Zeg/LyQnI4kAPI=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="lib\ubuntu.18.04-x64\libgit2-572e4d8.so" size="1394384">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>5WE3HEbRNmamyJ0hfeJWtx6kOPDk5gpeB7R62yopN0U=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="lib\win32\x64\git2-572e4d8.dll" size="1208320">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>KI2Iqzk+swaCM5waT4Aoqi6ohhDrh9/oXsDkOKCiNpk=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="lib\win32\x64\git2-572e4d8.pdb" size="7262208">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>R+R3gvPa5lYbUXJdNz6WBu6TWXgaG5DCtt0Jis3xy2k=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="lib\win32\x86\git2-572e4d8.dll" size="940032">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>teiPDfXLPoc/Gcbev/y54dw0wrXT0xBK7D5kNKHx8ok=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="lib\win32\x86\git2-572e4d8.pdb" size="7270400">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>3ye3LuhfaA3Ie2mW4BnfXPBaoiTQpLzIqWwkTnrzQYg=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="LibGit2Sharp.dll.config" size="249">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>u9w7gaMoykpAqYgjy86xWDPCP0BEhOWdoYMZhaEY2Fc=</dsig:DigestValue>
+    </hash>
+  </file>
   <file name="Resources\Programming Logs.txt" size="18929" writeableType="applicationData" />
   <file name="Resources\SOLICO.ico" size="11830">
     <hash>
@@ -67,10 +186,19 @@
     </hash>
   </file>
   <file name="Resources\Updates\_example.txt" size="913" writeableType="applicationData" />
-  <file name="Resources\Updates\_Other.txt" size="969" writeableType="applicationData" />
+  <file name="Resources\Updates\_Other.txt" size="1661" writeableType="applicationData" />
   <file name="Resources\Updates\Counter.txt" size="87" writeableType="applicationData" />
-  <file name="Resources\Updates\Discord Translator.txt" size="31" writeableType="applicationData" />
+  <file name="Resources\Updates\Discord Translator.txt" size="23" writeableType="applicationData" />
   <file name="Resources\Updates\Mass Renamer.txt" size="1266" writeableType="applicationData" />
+  <file name="Resources\Updates\SOL.txt" size="568">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>oiiyugXECNF+qvWaeV3XSXexAuUJ01RUJUw9odixDVI=</dsig:DigestValue>
+    </hash>
+  </file>
   <file name="SOL.exe.config" size="189" />
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <application>

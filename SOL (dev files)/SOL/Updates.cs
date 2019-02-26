@@ -27,7 +27,7 @@ namespace SOL
             string[] files = Directory.GetFiles(path, "*.txt");                                     //- get every file in the resources\updates folder
                                                                                                     //
             foreach (string file in files) {                                                        //T target each file seperetly
-                string[] pathSplit = file.Split(Convert.ToChar(92));                                //|-- split the current file by \
+                string[] pathSplit = file.Split(Convert.ToChar(92));                                //|-- split the current file by \ (the last entry in the array is the file name)
                 int tl = pathSplit[pathSplit.Length - 1].Length;                                    //|-- get the length of the tab name
                 tabControler.TabPages.Add(pathSplit[pathSplit.Length -1].Remove(tl - 4, 4));        //|-- add the tab (without the .txt extention)
                                                                                                     //|

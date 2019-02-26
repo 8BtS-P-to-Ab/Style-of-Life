@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\LibGit2Sharp.NativeBinaries.2.0.267\build\net46\LibGit2Sharp.NativeBinaries.props" Condition="Exists('..\packages\LibGit2Sharp.NativeBinaries.2.0.267\build\net46\LibGit2Sharp.NativeBinaries.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -13,6 +14,8 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <IsWebBootstrapper>false</IsWebBootstrapper>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <PublishUrl>C:\Users\shado\Documents\Visual Studio 2017\Projects\Counter\published\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -24,8 +27,8 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>1.0.0.1</ApplicationVersion>
+    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationVersion>1.1.1.2</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -69,13 +72,17 @@
   <PropertyGroup>
     <SignManifests>false</SignManifests>
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
-  </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
     <TargetZone>Internet</TargetZone>
   </PropertyGroup>
+  <PropertyGroup>
+    <NoWin32Manifest>true</NoWin32Manifest>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="LibGit2Sharp, Version=0.26.0.0, Culture=neutral, PublicKeyToken=7cbde695407f0333, processorArchitecture=MSIL">
+      <HintPath>..\packages\LibGit2Sharp.0.26.0\lib\net46\LibGit2Sharp.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -97,52 +104,6 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="AboutCount.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AboutCount.Designer.cs">
-      <DependentUpon>AboutCount.cs</DependentUpon>
-    </Compile>
-    <Compile Include="AboutDT.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AboutDT.Designer.cs">
-      <DependentUpon>AboutDT.cs</DependentUpon>
-    </Compile>
-    <Compile Include="AboutMR.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AboutMR.Designer.cs">
-      <DependentUpon>AboutMR.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Counter.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Counter.Designer.cs">
-      <DependentUpon>Counter.cs</DependentUpon>
-    </Compile>
-    <Compile Include="DiscordTranslator.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="DiscordTranslator.Designer.cs">
-      <DependentUpon>DiscordTranslator.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FolderSelectDialog.cs" />
-    <Compile Include="funcs.cs" />
-    <Compile Include="MassRename.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MassRename.Designer.cs">
-      <DependentUpon>MassRename.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MRGuide.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MRGuide.Designer.cs">
-      <DependentUpon>MRGuide.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Reflector.cs" />
-    <Compile Include="Splitter.cs" />
     <Compile Include="Toolbox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -160,27 +121,6 @@
     <EmbeddedResource Include="AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AboutCount.resx">
-      <DependentUpon>AboutCount.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="AboutDT.resx">
-      <DependentUpon>AboutDT.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="AboutMR.resx">
-      <DependentUpon>AboutMR.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Counter.resx">
-      <DependentUpon>Counter.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="DiscordTranslator.resx">
-      <DependentUpon>DiscordTranslator.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MassRename.resx">
-      <DependentUpon>MassRename.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MRGuide.resx">
-      <DependentUpon>MRGuide.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Toolbox.resx">
       <DependentUpon>Toolbox.cs</DependentUpon>
     </EmbeddedResource>
@@ -197,6 +137,7 @@
     <EmbeddedResource Include="Updates.resx">
       <DependentUpon>Updates.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -207,6 +148,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Resources\Additions\.gitplzdontignoreme" />
     <None Include="SOL_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -216,10 +158,10 @@
     <None Include="Resources\PROJECT SOL logo.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\Counter\test.txt" />
     <Content Include="Resources\Programming Logs.txt" />
     <Content Include="Resources\Updates\Counter.txt" />
     <Content Include="Resources\Updates\Discord Translator.txt" />
+    <Content Include="Resources\Updates\SOL.txt" />
     <Content Include="Resources\Updates\_Other.txt" />
     <Content Include="Resources\Updates\_example.txt" />
     <Content Include="Resources\Updates\Mass Renamer.txt" />
@@ -339,5 +281,12 @@
       <FileType>ManifestEntryPoint</FileType>
     </PublishFile>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\LibGit2Sharp.NativeBinaries.2.0.267\build\net46\LibGit2Sharp.NativeBinaries.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\LibGit2Sharp.NativeBinaries.2.0.267\build\net46\LibGit2Sharp.NativeBinaries.props'))" />
+  </Target>
 </Project>

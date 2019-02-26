@@ -1,0 +1,15 @@
+﻿1.1.1.2\s
+Added additions\i
+Overhauled method of starting programs, all programs are now treated as additions even if semi-'baked in'\i
+Programs .exe files will now be opened instead of being 'baked in'!
+3\e
+Programs can now be uninstalled
+Programs can now be downloaded from the github server
+Added fancy animations!
+Added a 'dont ignore me git' file, forcing github to create the "Additions" folder when downloaded
+2\e
+1\e
+
+1.0.0.1\s
+Minor bugfix, program will correctly find it's resources regardless if running in VS's debug mode or normally.
+12\e
