@@ -25,13 +25,18 @@ namespace Translators
 
         private void TranslatorsFrm_Load(object sender, EventArgs e)
         {
-            if (Environment.CurrentDirectory.Contains(@"\Debug") && !Directory.Exists(Environment.CurrentDirectory + @"..\..\Resources\Additions\Translators"))
+
+            if (Environment.CurrentDirectory.Contains(@"\Debug") && !Directory.Exists(Environment.CurrentDirectory + @"\..\..\Resources\Additions\Translators"))
             {//the program is open in debug (in visual studio)
                 path = System.IO.Path.Combine(Environment.CurrentDirectory, @"..\..\Resources\Additions");    //get the current working directory
+                MessageBox.Show("running in debug mode, path is: " + path);
             }
-            else if (Directory.Exists(Environment.CurrentDirectory + @"..\..\Resources\Additions\Translators"))
+            else if (Directory.Exists(Environment.CurrentDirectory + @"\..\..\Resources\Additions\Translators"))
             {//the program is open in SOL in debug (in visual studio)
-                path = System.IO.Path.Combine(Environment.CurrentDirectory, @"..\..\Resources\Additions\Translators\Resources\Additions");    //get the current working directory
+                string tmp = "";
+                tmp = Environment.CurrentDirectory + @"\..\..\Resources\Additions\Translators\Translators\Resources\Additions";    //get the current working directory
+                MessageBox.Show("running in debug mode in SOL, path is: " + tmp);
+                path = tmp;
             }
             else if (!Directory.Exists(Environment.CurrentDirectory + @"Resources\Additions\Translators"))
             {//the program is running in standalone release mode
@@ -39,7 +44,7 @@ namespace Translators
             }
             else
             {//the program is open in SOL in release mode
-                path = System.IO.Path.Combine(Environment.CurrentDirectory, @"Resources\Additions\Translators\Resources\Additions");          //get the current working directory
+                path = System.IO.Path.Combine(Environment.CurrentDirectory, @"Resources\Additions\Translators\Translators\Resources\Additions");          //get the current working directory
             }
 
             int s;
@@ -47,6 +52,13 @@ namespace Translators
             if (int.TryParse((Opacity * 100).ToString(), out s))
             {
                 sldBrTOpacity.Value = s;//set opacity on load
+            }
+
+            if (File.Exists(path + @"\.gitplzdontignoreme"))
+            {
+                //re-enable this when ready to fire
+                File.Delete(path + @"\.gitplzdontignoreme");//clean up
+
             }
 
             //search the Resources>Additions folder for installed additions
@@ -66,7 +78,7 @@ namespace Translators
 
         private void AddBtn_Click(object sender, EventArgs e)
         {
-            DialogResult response = updateAvalibleAddFromRepo("https://github.com/shadow999999/Translators-(SOL)");
+            DialogResult response = updateAvalibleAddFromRepo("https://github.com/shadow999999/Translators-SOL");
 
             if (response != DialogResult.Cancel)
             {
@@ -92,7 +104,7 @@ namespace Translators
             {
                 try
                 {
-                    string clonedRepoPath = Repository.Clone("https://github.com/shadow999999/Translators-(SOL)"
+                    string clonedRepoPath = Repository.Clone("https://github.com/shadow999999/Translators-SOL"
                         , path, new CloneOptions { BranchName = enumT.Current.ToString() });
 
                     //temporary and always throws exception, will remove once i figure out how to download a git repo's .zip file (i.e. not also the .git file)
@@ -299,7 +311,7 @@ namespace Translators
 
         private void ReloadDBtn_Click(object sender, EventArgs e)
         {
-            DialogResult response = updateAvalibleAddFromRepo("https://github.com/shadow999999/Translators-(SOL)");
+            DialogResult response = updateAvalibleAddFromRepo("https://github.com/shadow999999/Translators-SOL");
 
         }
 
