@@ -38,19 +38,19 @@ namespace Translators
 
             if (int.TryParse((Opacity * 100).ToString(), out s))
             {
-                sldBrOpacity.Value = s;//set opacity on load
+                sldBrTOpacity.Value = s;//set opacity on load
             }
 
             //search the Resources>Additions folder for installed additions
             updateInstalledAddLstBx();
 
-            org = AddBtn.Location.Y;
+            org = ManageBtn.Location.Y;
 
         }
 
         private void sldBrOpacity_Scroll(object sender, EventArgs e)
         {
-            double opacity = sldBrOpacity.Value;        //get the value from the opacity slider
+            double opacity = sldBrTOpacity.Value;        //get the value from the opacity slider
             double test = (opacity / 100);              //convert to decimal
 
             this.Opacity = test;                        //set the opacity
@@ -62,12 +62,12 @@ namespace Translators
 
             if (response != DialogResult.Cancel)
             {
-                InstalledAddLstBx.SelectionMode = SelectionMode.One;
+                InstalledTransLstBx.SelectionMode = SelectionMode.One;
                 timer1.Start();
 
-                if (AddBtn.Width >= 284)
+                if (ManageBtn.Width >= 284)
                 {
-                    InstalledAddLstBx.SelectionMode = SelectionMode.MultiExtended;
+                    InstalledTransLstBx.SelectionMode = SelectionMode.MultiExtended;
                     Padding test = label5.Padding;
                     test.Right = 127;
                     label5.Padding = test;
@@ -166,7 +166,7 @@ namespace Translators
 
         private void UninstallBtn_Click(object sender, EventArgs e)
         {
-            foreach (string item in InstalledAddLstBx.SelectedItems)
+            foreach (string item in InstalledTransLstBx.SelectedItems)
             {
                 if (Directory.Exists(path + @"\" + item))
                 {
@@ -174,14 +174,14 @@ namespace Translators
                 }
             }
 
-            InstalledAddLstBx.Items.Clear();
+            InstalledTransLstBx.Items.Clear();
             updateInstalledAddLstBx();
         }
         //8
         private void timer1_Tick(object sender, EventArgs e)
         {
 
-            if (Size.Width >= 495 && AddBtn.Width <= 140 && OpacityPnl.Width >= 471)
+            if (Size.Width >= 495 && ManageBtn.Width <= 140 && OpacityPnl.Width >= 471)
             {//if this button is at the about buttons location
                 if (!rot)
                 {//and not rotating
@@ -194,8 +194,8 @@ namespace Translators
                 testS.Width += 10;//resize the form
                 Size = testS;
 
-                AddBtn.Width = 133;
-                AddBtn.Text = "Stop managing translators";
+                ManageBtn.Width = 133;
+                ManageBtn.Text = "Stop managing translators";
                 rot = true;//start rotation
             }
 
@@ -218,29 +218,29 @@ namespace Translators
                 }
                 else if (Size.Width <= 336)
                 {
-                    AddBtn.Text = "Manage translators";
-                    ReloadDBtn.Visible = false;
-                    DownloadAddLstBx.Visible = false;
-                    DownloadBtn.Visible = false;
+                    ManageBtn.Text = "Manage translators";
+                    ReloadDTBtn.Visible = false;
+                    DownloadTransLstBx.Visible = false;
+                    DownloadTBtn.Visible = false;
                 }
 
-                if (AddBtn.Width < 284)
+                if (ManageBtn.Width < 284)
                 {
-                    AddBtn.Width += 10;
+                    ManageBtn.Width += 10;
                 }
-                else if (AddBtn.Width > 284)
+                else if (ManageBtn.Width > 284)
                 {
-                    AddBtn.Width = 284;
-                    UninstallBtn.Visible = false;
+                    ManageBtn.Width = 284;
+                    UninstallTBtn.Visible = false;
                 }
 
             }
             else
             {
-                ReloadDBtn.Visible = true;
-                UninstallBtn.Visible = true;
-                DownloadAddLstBx.Visible = true;
-                DownloadBtn.Visible = true;
+                ReloadDTBtn.Visible = true;
+                UninstallTBtn.Visible = true;
+                DownloadTransLstBx.Visible = true;
+                DownloadTBtn.Visible = true;
 
                 if (OpacityPnl.Width < 471)
                 {
@@ -257,15 +257,15 @@ namespace Translators
                     Size = testS;
                 }
 
-                if (AddBtn.Width > 140)
+                if (ManageBtn.Width > 140)
                 {
-                    AddBtn.Width -= 10;
+                    ManageBtn.Width -= 10;
                     //AddBtn.Text = "" + AddBtn.Location.X;
 
                 }
-                else if (AddBtn.Width <= 140)
+                else if (ManageBtn.Width <= 140)
                 {
-                    AddBtn.Width = 140;
+                    ManageBtn.Width = 140;
                 }
 
             }
@@ -276,7 +276,7 @@ namespace Translators
         {
             enumT = branches.GetEnumerator();
             int i = 0;
-            while (i != DownloadAddLstBx.SelectedIndex + 1)
+            while (i != DownloadTransLstBx.SelectedIndex + 1)
             {
                 enumT.MoveNext();
                 i++;
@@ -297,9 +297,9 @@ namespace Translators
 
         private void InstalledAddLstBx_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (File.Exists(path + @"\" + InstalledAddLstBx.SelectedItem + @"\" + InstalledAddLstBx.SelectedItem + @"\bin\Debug\" + InstalledAddLstBx.SelectedItem + ".exe"))
+            if (File.Exists(path + @"\" + InstalledTransLstBx.SelectedItem + @"\" + InstalledTransLstBx.SelectedItem + @"\bin\Debug\" + InstalledTransLstBx.SelectedItem + ".exe"))
             {
-                System.Diagnostics.Process.Start(path + @"\" + InstalledAddLstBx.SelectedItem + @"\" + InstalledAddLstBx.SelectedItem + @"\bin\Debug\" + InstalledAddLstBx.SelectedItem + ".exe");
+                System.Diagnostics.Process.Start(path + @"\" + InstalledTransLstBx.SelectedItem + @"\" + InstalledTransLstBx.SelectedItem + @"\bin\Debug\" + InstalledTransLstBx.SelectedItem + ".exe");
             }
             else
             {
@@ -334,16 +334,16 @@ namespace Translators
             foreach (string add in adds)
             {
                 string[] pathSplit = add.Split(Convert.ToChar(92));
-                InstalledAddLstBx.Items.Add(pathSplit[pathSplit.Length - 1]);
+                InstalledTransLstBx.Items.Add(pathSplit[pathSplit.Length - 1]);
             }
 
         }
 
         public DialogResult updateAvalibleAddFromRepo(string respositoryFullURL) {
-            DownloadAddLstBx.Items.Clear();
+            DownloadTransLstBx.Items.Clear();
             DialogResult response = DialogResult.Ignore;
 
-            if (AddBtn.Width >= 284)
+            if (ManageBtn.Width <= 495)
             {
                 while (true)
                 {
@@ -359,12 +359,12 @@ namespace Translators
                             if (branch != "master")
                             {
                                 string branchT = branch.Replace('-', ' ');
-                                DownloadAddLstBx.Items.Add(branchT);
+                                DownloadTransLstBx.Items.Add(branchT);
                             }//as long as the branch is not the main, add it to the list
 
                         }
                         enumT = branches.GetEnumerator();
-                        DownloadAddLstBx.SelectedIndex = 0;//forces ProgramsLstBx_SelectedIndexChanged to trigger
+                        DownloadTransLstBx.SelectedIndex = 0;//forces ProgramsLstBx_SelectedIndexChanged to trigger
                         break;
                     }
                     catch (LibGit2Sharp.LibGit2SharpException libGit2SharpException)
