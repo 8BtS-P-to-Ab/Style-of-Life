@@ -25,13 +25,21 @@ namespace Translators
 
         private void TranslatorsFrm_Load(object sender, EventArgs e)
         {
-            if (Environment.CurrentDirectory.Contains(@"\Debug"))
-            {//if in debug (in visual studio)
+            if (Environment.CurrentDirectory.Contains(@"\Debug") && !Directory.Exists(Environment.CurrentDirectory + @"..\..\Resources\Additions\Translators"))
+            {//the program is open in debug (in visual studio)
                 path = System.IO.Path.Combine(Environment.CurrentDirectory, @"..\..\Resources\Additions");    //get the current working directory
             }
-            else
-            {
+            else if (Directory.Exists(Environment.CurrentDirectory + @"..\..\Resources\Additions\Translators"))
+            {//the program is open in SOL in debug (in visual studio)
+                path = System.IO.Path.Combine(Environment.CurrentDirectory, @"..\..\Resources\Additions\Translators\Resources\Additions");    //get the current working directory
+            }
+            else if (!Directory.Exists(Environment.CurrentDirectory + @"Resources\Additions\Translators"))
+            {//the program is running in standalone release mode
                 path = System.IO.Path.Combine(Environment.CurrentDirectory, @"Resources\Additions");          //get the current working directory
+            }
+            else
+            {//the program is open in SOL in release mode
+                path = System.IO.Path.Combine(Environment.CurrentDirectory, @"Resources\Additions\Translators\Resources\Additions");          //get the current working directory
             }
 
             int s;
