@@ -1,0 +1,11 @@
+C:\Users\shado\Desktop\SOL branches (local)\Counter\Counter\obj\Debug\Counter.csprojAssemblyReference.cache
+C:\Users\shado\Desktop\SOL branches (local)\Counter\Counter\obj\Debug\Counter.AboutBox.resources
+C:\Users\shado\Desktop\SOL branches (local)\Counter\Counter\obj\Debug\Counter.Counter.resources
+C:\Users\shado\Desktop\SOL branches (local)\Counter\Counter\obj\Debug\Counter.Properties.Resources.resources
+C:\Users\shado\Desktop\SOL branches (local)\Counter\Counter\obj\Debug\Counter.csproj.GenerateResource.cache
+C:\Users\shado\Desktop\SOL branches (local)\Counter\Counter\obj\Debug\Counter.csproj.CoreCompileInputs.cache
+C:\Users\shado\Desktop\SOL branches (local)\Counter\Counter\bin\Debug\Counter.exe.config
+C:\Users\shado\Desktop\SOL branches (local)\Counter\Counter\bin\Debug\Counter.exe
+C:\Users\shado\Desktop\SOL branches (local)\Counter\Counter\bin\Debug\Counter.pdb
+C:\Users\shado\Desktop\SOL branches (local)\Counter\Counter\obj\Debug\Counter.exe
+C:\Users\shado\Desktop\SOL branches (local)\Counter\Counter\obj\Debug\Counter.pdb
