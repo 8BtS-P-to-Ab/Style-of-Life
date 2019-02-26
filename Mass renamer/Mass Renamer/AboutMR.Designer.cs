@@ -83,7 +83,7 @@
             // 
             this.logoPictureBox.Cursor = System.Windows.Forms.Cursors.Hand;
             this.logoPictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.logoPictureBox.Image = ((System.Drawing.Image)(resources.GetObject("logoPictureBox.Image")));
+            this.logoPictureBox.Image = global::Mass_Renamer.Properties.Resources.PROJECT_SOL_logo;
             this.logoPictureBox.Location = new System.Drawing.Point(3, 3);
             this.logoPictureBox.Name = "logoPictureBox";
             this.tableLayoutPanel.SetRowSpan(this.logoPictureBox, 6);

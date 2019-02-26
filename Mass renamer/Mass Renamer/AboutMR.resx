@@ -122,41 +122,6 @@
 This program also provides other relevant features like mass extention renaming.</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="logoPictureBox.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        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
-        Qhjwv6+//wGC2igPN+lgFAAAAABJRU5ErkJggg==
-</value>
-  </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAEAg4UQAAEABAAgLgAAFgAAACgAAACDAAAACgEAAAEABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

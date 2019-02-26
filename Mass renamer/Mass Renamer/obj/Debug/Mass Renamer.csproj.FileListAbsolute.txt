@@ -10,3 +10,15 @@ C:\Users\shado\Documents\GitHub\Style-of-Life\Mass renamer\Mass Renamer\Mass Ren
 C:\Users\shado\Documents\GitHub\Style-of-Life\Mass renamer\Mass Renamer\Mass Renamer\obj\Debug\Mass Renamer.csproj.CoreCompileInputs.cache
 C:\Users\shado\Documents\GitHub\Style-of-Life\Mass renamer\Mass Renamer\Mass Renamer\obj\Debug\Mass Renamer.exe
 C:\Users\shado\Documents\GitHub\Style-of-Life\Mass renamer\Mass Renamer\Mass Renamer\obj\Debug\Mass Renamer.pdb
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\bin\Debug\Mass Renamer.exe.config
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\bin\Debug\Mass Renamer.exe
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\bin\Debug\Mass Renamer.pdb
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.csprojAssemblyReference.cache
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass_Renamer.AboutMR.resources
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass_Renamer.MassRename.resources
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass_Renamer.MRGuide.resources
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass_Renamer.Properties.Resources.resources
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.csproj.GenerateResource.cache
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.csproj.CoreCompileInputs.cache
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.exe
+C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.pdb
