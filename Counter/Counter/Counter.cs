@@ -70,14 +70,15 @@ namespace Counter
         private void Counter_Load(object sender, EventArgs e)
         {
             if (Environment.CurrentDirectory.Contains(@"\Debug"))
-            {//if in debug (in visual studio)
-                path = Path.Combine(Environment.CurrentDirectory, @"..\..\Resources\Counter\");     //get the current working directory
+            {//if in debug mode
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location).TrimEnd(@"\bin\Debug".ToCharArray()) + @"\Resources\Counter\";
             }
             else
             {
-                path = Path.Combine(Environment.CurrentDirectory, @"Resources\Counter\");          //get the current working directory
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"\Resources\Counter\";
             }
 
+            this.Icon = new Icon(path + @"\..\SOLICO.ico");
             updateList();                                                   //update the list of counters, if any
                                                                             //
             if (int.TryParse((Opacity * 100).ToString(), out int s))        //Ttry to parse (the current form opacity(*100) to a string (so it can be parsed)) to an int as the var 's'

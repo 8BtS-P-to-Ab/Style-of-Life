@@ -71,7 +71,7 @@
             // 
             this.aboutBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.aboutBtn.Name = "aboutBtn";
-            this.aboutBtn.Size = new System.Drawing.Size(180, 22);
+            this.aboutBtn.Size = new System.Drawing.Size(107, 22);
             this.aboutBtn.Text = "About";
             this.aboutBtn.ToolTipText = "About SOL\'s mass renamer form";
             this.aboutBtn.Click += new System.EventHandler(this.aboutBtn_Click);
