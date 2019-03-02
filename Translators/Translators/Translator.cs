@@ -25,28 +25,15 @@ namespace Translators
 
         private void TranslatorsFrm_Load(object sender, EventArgs e)
         {
-
-            if (Environment.CurrentDirectory.Contains(@"\Debug") && !Directory.Exists(Environment.CurrentDirectory + @"\..\..\Resources\Additions\Translators"))
-            {//the program is open in debug (in visual studio)
-                path = System.IO.Path.Combine(Environment.CurrentDirectory, @"..\..\Resources\Additions");    //get the current working directory
-                MessageBox.Show("running in debug mode, path is: " + path);
+            if (Environment.CurrentDirectory.Contains(@"\Debug"))
+            {//if in debug mode
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location).TrimEnd(@"\bin\Debug".ToCharArray()) + @"\Resources\Additions";
             }
-            else if (Directory.Exists(Environment.CurrentDirectory + @"\..\..\Resources\Additions\Translators"))
-            {//the program is open in SOL in debug (in visual studio)
-                string tmp = "";
-                tmp = Environment.CurrentDirectory + @"\..\..\Resources\Additions\Translators\Translators\Resources\Additions";    //get the current working directory
-                MessageBox.Show("running in debug mode in SOL, path is: " + tmp);
-                path = tmp;
-            }
-            else if (!Directory.Exists(Environment.CurrentDirectory + @"Resources\Additions\Translators"))
-            {//the program is running in standalone release mode
-                path = System.IO.Path.Combine(Environment.CurrentDirectory, @"Resources\Additions");          //get the current working directory
-            }
-            else
-            {//the program is open in SOL in release mode
-                path = System.IO.Path.Combine(Environment.CurrentDirectory, @"Resources\Additions\Translators\Translators\Resources\Additions");          //get the current working directory
+            else {
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"\Resources\Additions";
             }
 
+            this.Icon = new Icon(path + @"\..\SOLICO.ico");
             int s;
 
             if (int.TryParse((Opacity * 100).ToString(), out s))
@@ -54,12 +41,12 @@ namespace Translators
                 sldBrTOpacity.Value = s;//set opacity on load
             }
 
-            if (File.Exists(path + @"\.gitplzdontignoreme"))
-            {
-                //re-enable this when ready to fire
-                File.Delete(path + @"\.gitplzdontignoreme");//clean up
+            //if (File.Exists(path + @"\.gitplzdontignoreme"))
+            //{
+            //    //re-enable this when ready to fire
+            //    File.Delete(path + @"\.gitplzdontignoreme");//clean up
 
-            }
+            //}
 
             //search the Resources>Additions folder for installed additions
             updateInstalledAddLstBx();
@@ -105,14 +92,14 @@ namespace Translators
                 try
                 {
                     string clonedRepoPath = Repository.Clone("https://github.com/shadow999999/Translators-SOL"
-                        , path, new CloneOptions { BranchName = enumT.Current.ToString() });
+                        , path + @"\" + enumT.Current.ToString().Replace('-', ' '), new CloneOptions { BranchName = enumT.Current.ToString() });
 
                     //temporary and always throws exception, will remove once i figure out how to download a git repo's .zip file (i.e. not also the .git file)
-                    if (Directory.Exists(path + @"\.git"))
+                    if (Directory.Exists(path + @"\" + enumT.Current.ToString() + @"\.git"))
                     {
                         try
                         {
-                            Directory.Delete(path + @"\.git", true);
+                            Directory.Delete(path + @"\" + enumT.Current.ToString() + @"\.git", true);
                         }
                         catch (Exception exc)
                         {
@@ -317,13 +304,15 @@ namespace Translators
 
         private void InstalledAddLstBx_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (File.Exists(path + @"\" + InstalledTransLstBx.SelectedItem + @"\" + InstalledTransLstBx.SelectedItem + @"\bin\Debug\" + InstalledTransLstBx.SelectedItem + ".exe"))
+            if (File.Exists(path + @"\" + InstalledTransLstBx.SelectedItem + @"\" + InstalledTransLstBx.SelectedItem
+                + @"\" + InstalledTransLstBx.SelectedItem + @"\bin\Debug\" + InstalledTransLstBx.SelectedItem + ".exe"))//yea i know...
             {
-                System.Diagnostics.Process.Start(path + @"\" + InstalledTransLstBx.SelectedItem + @"\" + InstalledTransLstBx.SelectedItem + @"\bin\Debug\" + InstalledTransLstBx.SelectedItem + ".exe");
+                System.Diagnostics.Process.Start(path + @"\" + InstalledTransLstBx.SelectedItem + @"\" + InstalledTransLstBx.SelectedItem
+                    + @"\" + InstalledTransLstBx.SelectedItem + @"\bin\Debug\" + InstalledTransLstBx.SelectedItem + ".exe");
             }
-            else
-            {
-                MessageBox.Show("Could not find executable");
+            else {
+                MessageBox.Show("Could not find executable. " + path + @"\" + InstalledTransLstBx.SelectedItem + @"\" + InstalledTransLstBx.SelectedItem
+                    + @"\" + InstalledTransLstBx.SelectedItem + @"\bin\Debug\" + InstalledTransLstBx.SelectedItem + ".exe");
             }
 
         }

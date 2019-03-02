@@ -241,7 +241,6 @@
             this.Controls.Add(this.InstalledMngRsr);
             this.Controls.Add(this.DownloadTBtn);
             this.Controls.Add(this.DownloadTransLstBx);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "TranslatorsFrm";
             this.Text = "Installed translators";
             this.Load += new System.EventHandler(this.TranslatorsFrm_Load);

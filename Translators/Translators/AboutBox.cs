@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
@@ -92,12 +93,12 @@ namespace Translators
 
         private void okButton_Click(object sender, EventArgs e)
         {
-
+            Close();
         }
 
         private void logoPictureBox_Click(object sender, EventArgs e)
         {
-
+            Process.Start("https://github.com/shadow999999/Style-of-Life");
         }
     }
 }
