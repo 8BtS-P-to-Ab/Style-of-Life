@@ -1,6 +1,11 @@
 ﻿Planned Features (sorted by upcoming)\s
 
+General\i
+May need to set the about pages' banners programatically as they may (potentially) be staticly definded
+\e
+
 SOL\i
+Closing SOL closes all other child forms
 Migrate all 'baked in' programs to the github server and remove all 'baked in' programs from the master branch
 Comments
 Search bar
@@ -21,6 +26,7 @@ Empty
 16\e
 
 Translators:\i
+After downloading an addition, the installed additions list box needs to be updated
 Fix the about page
 22\e
 
@@ -43,11 +49,22 @@ multithreading
 20	\e
 1\e
 
+-----------------------------
+
 Known bugs\s
 General (ALL):\i
 Need more checks for stuff like access violations (file in use) and such.
 40\e
+
 SOL\i
 Downloading an addition will always fail to delete the junk (see item 2 of Planned>SOL)
 43\e
+
+Counter\i
+None.
+\e
+
+Translators\i
+None.
+\e
 39\e

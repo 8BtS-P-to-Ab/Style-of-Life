@@ -1,13 +1,18 @@
-﻿1.0.2.5\s
+﻿1.0.2.6\s
+Fixed an issue where the icon would not load as it was searching the wrong directory (was searching statically)
+Updated binaries to reflect the correct application & build versions
+\e
+
+1.0.2.5\s
 Added a warning that there is currently no input sanitisation
 Fixed a crash that would occur if the file that's being renamed already exists
 Fixed a problem with mass renaming a folder multiple times, resulting in only one file being renamed
 Added the Ability to disable renaming, allowing users to be able to use the "add extra text" and "change extention" functions without chaing the selected file's names
 Added the ability to change a file extention during renaming
 Fixed the "add extra text" box, it's now actually optional like it says
+Updated binaries to reflect the correct application & build versions
 1\e
 
-(bellow is from memory)
 1.0.1.1\s
 Added a toolstrip\i
 Added the about and guide pages

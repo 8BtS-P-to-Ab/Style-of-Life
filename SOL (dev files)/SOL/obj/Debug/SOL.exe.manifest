@@ -4,7 +4,7 @@
   <description asmv2:iconFile="Resources\SOLICO.ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="SOL" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="SOL" version="1.1.1.4" language="neutral" processorArchitecture="msil" />
     <commandLine file="SOL.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -63,8 +63,8 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SOL.exe" size="97280">
-      <assemblyIdentity name="SOL" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SOL.exe" size="97792">
+      <assemblyIdentity name="SOL" version="1.1.1.4" language="neutral" processorArchitecture="msil" />
     </dependentAssembly>
   </dependency>
   <file name="lib\alpine-x64\libgit2-572e4d8.so" size="1376024">
@@ -186,17 +186,34 @@
     </hash>
   </file>
   <file name="Resources\Updates\_example.txt" size="913" writeableType="applicationData" />
-  <file name="Resources\Updates\_Other.txt" size="1661" writeableType="applicationData" />
-  <file name="Resources\Updates\Counter.txt" size="87" writeableType="applicationData" />
-  <file name="Resources\Updates\Discord Translator.txt" size="23" writeableType="applicationData" />
-  <file name="Resources\Updates\Mass Renamer.txt" size="1266" writeableType="applicationData" />
-  <file name="Resources\Updates\SOL.txt" size="568">
+  <file name="Resources\Updates\_Other.txt" size="1997" writeableType="applicationData" />
+  <file name="Resources\Updates\Counter.txt" size="417" writeableType="applicationData" />
+  <file name="Resources\Updates\Mass Renamer.txt" size="1511" writeableType="applicationData" />
+  <file name="Resources\Updates\SOL.txt" size="898">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>oiiyugXECNF+qvWaeV3XSXexAuUJ01RUJUw9odixDVI=</dsig:DigestValue>
+      <dsig:DigestValue>XYyS8ODYzeYmWKtPXEvnKnPipQibbQTfO3mphCmhD3g=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="Resources\Updates\Translators - Discord Translator.txt" size="129">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>cBCwxACSIaxL483qwqlIniviL4dGnorOdMmeRjD+eXw=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="Resources\Updates\Translators.txt" size="312">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>3QbW61EVUNuCjfmr6TtzdPi/eQqaVb5qS3536VtC8pk=</dsig:DigestValue>
     </hash>
   </file>
   <file name="SOL.exe.config" size="189" />

@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Toolbox));
             this.label5 = new System.Windows.Forms.Label();
             this.sldBrOpacity = new System.Windows.Forms.TrackBar();
             this.toolTipCntrl = new System.Windows.Forms.ToolTip(this.components);
@@ -273,10 +272,9 @@
             this.Controls.Add(this.updatesBtn);
             this.Controls.Add(this.aboutBtn);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Toolbox";
-            this.Text = "Form1";
+            this.Text = "Toolbox";
             this.Load += new System.EventHandler(this.Toolbox_Load);
             ((System.ComponentModel.ISupportInitialize)(this.sldBrOpacity)).EndInit();
             this.InstalledAddResizer.ResumeLayout(false);

@@ -160,8 +160,9 @@
   <ItemGroup>
     <Content Include="Resources\Programming Logs.txt" />
     <Content Include="Resources\Updates\Counter.txt" />
-    <Content Include="Resources\Updates\Discord Translator.txt" />
+    <Content Include="Resources\Updates\Translators - Discord Translator.txt" />
     <Content Include="Resources\Updates\SOL.txt" />
+    <Content Include="Resources\Updates\Translators.txt" />
     <Content Include="Resources\Updates\_Other.txt" />
     <Content Include="Resources\Updates\_example.txt" />
     <Content Include="Resources\Updates\Mass Renamer.txt" />

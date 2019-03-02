@@ -25,26 +25,30 @@ namespace SOL
         private void Toolbox_Load(object sender, EventArgs e)
         {
             if (Environment.CurrentDirectory.Contains(@"\Debug"))
-            {//if in debug (in visual studio)
-                path = System.IO.Path.Combine(Environment.CurrentDirectory, @"..\..\Resources\Additions");    //get the current working directory
+            {//if in debug mode
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location).TrimEnd(@"\bin\Debug".ToCharArray()) + @"\Resources\Additions";
             }
             else
             {
-                path = System.IO.Path.Combine(Environment.CurrentDirectory, @"Resources\Additions");          //get the current working directory
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"\Resources\Additions";
             }
 
-            int s;
+            this.Icon = new Icon(path + @"\..\SOLICO.ico");
 
-            if (int.TryParse((Opacity * 100).ToString(), out s))
+            if (int.TryParse((Opacity * 100).ToString(), out int s))
             {
                 sldBrOpacity.Value = s;//set opacity on load
             }
 
-            if(File.Exists(path + @"\.gitplzdontignoreme"))
-            {
-                File.Delete(path + @"\.gitplzdontignoreme");//clean up
+            //if (File.Exists(path + @"\.gitplzdontignoreme"))
+            //{
+            //    File.Delete(path + @"\.gitplzdontignoreme");//clean up
 
-            }
+            //}
+            //else
+            //{
+            //    //MessageBox.Show("could not delete the .gitplzdontignoreme file. " + path + @"\.gitplzdontignoreme");
+            //}
 
             //search the Resources>Additions folder for installed additions
             updateInstalledAddLstBx();
@@ -159,14 +163,14 @@ namespace SOL
                 {
                     //https://github.com/shadow999999/Style-of-Life/archive/Mass-renamer.zip
                     string clonedRepoPath = Repository.Clone("https://github.com/shadow999999/Style-of-Life"
-                        , path, new CloneOptions { BranchName = enumT.Current.ToString() });
+                        , path + @"\" + enumT.Current.ToString().Replace('-', ' '), new CloneOptions { BranchName = enumT.Current.ToString() });
 
                     //temporary and always throws exception, will remove once i figure out how to download a git repo's .zip file (i.e. not also the .git file)
-                    if (Directory.Exists(path + @"\.git"))
+                    if (Directory.Exists(path + @"\" + enumT.Current.ToString() + @"\.git"))
                     {
                         try
                         {
-                            Directory.Delete(path + @"\.git", true);
+                            Directory.Delete(path + @"\" + enumT.Current.ToString() + @"\.git", true);
                         }
                         catch (Exception exc) {
                             MessageBox.Show("An error occured while trying to delete useless junk: " + exc.Message, "Error code: " + exc.HResult);
@@ -420,12 +424,15 @@ namespace SOL
 
         private void InstalledAddLstBx_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (File.Exists(path + @"\" + InstalledAddLstBx.SelectedItem + @"\" + InstalledAddLstBx.SelectedItem + @"\bin\Debug\" + InstalledAddLstBx.SelectedItem + ".exe"))
+            if (File.Exists(path + @"\" + InstalledAddLstBx.SelectedItem + @"\" + InstalledAddLstBx.SelectedItem
+                + @"\" + InstalledAddLstBx.SelectedItem + @"\bin\Debug\" + InstalledAddLstBx.SelectedItem + ".exe"))//yea i know...
             {
-                System.Diagnostics.Process.Start(path + @"\" + InstalledAddLstBx.SelectedItem + @"\" + InstalledAddLstBx.SelectedItem + @"\bin\Debug\" + InstalledAddLstBx.SelectedItem + ".exe");
+                System.Diagnostics.Process.Start(path + @"\" + InstalledAddLstBx.SelectedItem + @"\" + InstalledAddLstBx.SelectedItem
+                    + @"\" + InstalledAddLstBx.SelectedItem + @"\bin\Debug\" + InstalledAddLstBx.SelectedItem + ".exe");
             }
             else {
-                MessageBox.Show("Could not find executable");
+                MessageBox.Show("Could not find executable. " + path + @"\" + InstalledAddLstBx.SelectedItem + @"\" + InstalledAddLstBx.SelectedItem
+                    + @"\" + InstalledAddLstBx.SelectedItem + @"\bin\Debug\" + InstalledAddLstBx.SelectedItem + ".exe");
             }
 
         }

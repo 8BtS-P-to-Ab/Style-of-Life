@@ -1,4 +1,14 @@
-﻿1.1.1.2\s
+﻿1.1.1.4\s
+Added load-time path checking
+Fixed an issue where the icon would not load as it was searching the wrong directory (was searching statically)
+Updated binaries to reflect the correct application & build versions
+\e
+
+1.1.1.3\s
+Fixed an issue where it was only possible to have 1 addition installed at a time
+\e
+
+1.1.1.2\s
 Added additions\i
 Overhauled method of starting programs, all programs are now treated as additions even if semi-'baked in'\i
 Programs .exe files will now be opened instead of being 'baked in'!

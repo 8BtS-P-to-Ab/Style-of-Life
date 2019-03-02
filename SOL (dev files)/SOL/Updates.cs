@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 
@@ -18,11 +19,17 @@ namespace SOL
 
         private void Updates_Load(object sender, EventArgs e)
         {
-            if (Environment.CurrentDirectory.Contains(@"\Debug")) {//if in debug (in visual studio)
-                path = Path.Combine(Environment.CurrentDirectory, @"..\..\Resources\Updates\");     //get the current working directory
-            } else {
-                path = Path.Combine(Environment.CurrentDirectory, @"Resources\Updates\");          //get the current working directory
+
+            if (Environment.CurrentDirectory.Contains(@"\Debug"))
+            {//if in debug mode
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location).TrimEnd(@"\bin\Debug".ToCharArray()) + @"\Resources\Updates\";
             }
+            else
+            {
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"Resources\Updates\";
+            }
+
+            this.Icon = new Icon(path + @"\..\SOLICO.ico");
 
             string[] files = Directory.GetFiles(path, "*.txt");                                     //- get every file in the resources\updates folder
                                                                                                     //
