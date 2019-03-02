@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -30,6 +31,21 @@ namespace Mass_Renamer
 
         bool DW = false;
         bool active = false;
+        string path;
+
+        private void MassRename_Load(object sender, EventArgs e)
+        {
+            if (Environment.CurrentDirectory.Contains(@"\Debug"))
+            {//if in debug mode
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location).TrimEnd(@"\bin\Debug".ToCharArray()) + @"\Resources\Counter";
+            }
+            else
+            {
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"\Resources\Counter";
+            }
+
+            this.Icon = new Icon(path + @"\..\SOLICO.ico");
+        }
 
         private void BtnMassRename_Click(object sender, EventArgs e)
         {
@@ -657,7 +673,6 @@ namespace Mass_Renamer
 
             this.Opacity = test;//set the opacity
         }
-
 
     }
 }
