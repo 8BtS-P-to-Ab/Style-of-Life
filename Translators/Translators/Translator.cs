@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -22,6 +23,10 @@ namespace Translators
         int org = 0;
         //bool click = false;
         bool rot = false;
+        Process[] openedAdd = new Process[0];
+        object[] removed = new object[0];//stores the set of installed additions lstbx objects that where removed
+        int[] removedIndex = new int[0];//and their respective indicies
+        public static int addCount = 0;
 
         private void TranslatorsFrm_Load(object sender, EventArgs e)
         {
@@ -29,52 +34,112 @@ namespace Translators
             {//if in debug mode
                 path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location).TrimEnd(@"\bin\Debug".ToCharArray()) + @"\Resources\Additions";
             }
-            else {
+            else
+            {
                 path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"\Resources\Additions";
             }
 
             this.Icon = new Icon(path + @"\..\SOLICO.ico");
-            int s;
+            clearTextBtn.BackgroundImage = Image.FromFile(path + @"\..\clear.ico");
+            ReloadIBtn.BackgroundImage = Image.FromFile(path + @"\..\refresh.ico");
+            ReloadDBtn.BackgroundImage = Image.FromFile(path + @"\..\refresh.ico");
+            clearDwnBtn.BackgroundImage = Image.FromFile(path + @"\..\clear.ico");
 
-            if (int.TryParse((Opacity * 100).ToString(), out s))
+            if (int.TryParse((Opacity * 100).ToString(), out int s))
             {
-                sldBrTOpacity.Value = s;//set opacity on load
+                sldBrOpacity.Value = s;//set opacity on load
             }
-
-            //if (File.Exists(path + @"\.gitplzdontignoreme"))
-            //{
-            //    //re-enable this when ready to fire
-            //    File.Delete(path + @"\.gitplzdontignoreme");//clean up
-
-            //}
 
             //search the Resources>Additions folder for installed additions
             updateInstalledAddLstBx();
 
-            org = ManageBtn.Location.Y;
+            org = AddBtn.Location.Y;
 
+        }
+
+        private void aboutBtn_Click(object sender, EventArgs e)
+        {
+            AboutBox test = new AboutBox();
+            Form isOpen = Application.OpenForms["AboutBox"];        //get if the window is still open
+                                                                    //
+            if (isOpen != null) { isOpen.Close(); }                 //if it is then close it
+                                                                    //
+            test.Show();                                            //otherwise open it
         }
 
         private void sldBrOpacity_Scroll(object sender, EventArgs e)
         {
-            double opacity = sldBrTOpacity.Value;        //get the value from the opacity slider
+            double opacity = sldBrOpacity.Value;        //get the value from the opacity slider
             double test = (opacity / 100);              //convert to decimal
 
             this.Opacity = test;                        //set the opacity
         }
 
+        private void updatesBtn_Click(object sender, EventArgs e)
+        {
+            Updates form = new Updates();
+            Form isOpen = Application.OpenForms["Mass Renamer"];        //get if the window is still open
+                                                                        //
+            if (isOpen != null) { isOpen.Close(); }                     //if it is then close it
+                                                                        //
+            form.Show();                                                //otherwise open it
+        }
+
         private void AddBtn_Click(object sender, EventArgs e)
         {
-            DialogResult response = updateAvalibleAddFromRepo("https://github.com/shadow999999/Translators-SOL");
+            DownloadAddLstBx.Items.Clear();
+            DialogResult response = DialogResult.Ignore;
+            //get all additions (git repo branches)
+            if (AddBtn.Location.Y <= org)
+            {
+                while (true)
+                {
+                    try
+                    {
+                        branches = Repository.ListRemoteReferences("https://github.com/shadow999999/Translators-SOL")
+                                     .Where(elem => elem.IsLocalBranch)
+                                     .Select(elem => elem.CanonicalName
+                                                         .Replace("refs/heads/", ""));
+
+                        foreach (string branch in branches)
+                        {//get each addition seperetly
+                            if (branch != "master")
+                            {
+                                string branchT = branch.Replace('-', ' ');
+                                DownloadAddLstBx.Items.Add(branchT);
+                            }//as long as the branch is not the main, add it to the list
+
+                        }
+                        enumT = branches.GetEnumerator();
+                        DownloadAddLstBx.SelectedIndex = 0;//forces ProgramsLstBx_SelectedIndexChanged to trigger
+                        break;
+                    }
+                    catch (LibGit2Sharp.LibGit2SharpException libGit2SharpException)
+                    {
+                        if (libGit2SharpException.Message == "this remote has never connected")
+                        {
+                            response = MessageBox.Show("An error occured; github may be down or you have no internet!",
+                                "Connectivity error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Exclamation);
+                            if (response == DialogResult.Cancel) { break; }
+                            //handle later
+                        }
+                        else
+                        {
+                            MessageBox.Show("An unknown error occured whilst trying to retreive data from github: " + libGit2SharpException.Message);
+                            break;
+                        }
+                    }
+                }
+            }
 
             if (response != DialogResult.Cancel)
             {
-                InstalledTransLstBx.SelectionMode = SelectionMode.One;
+                InstalledAddLstBx.SelectionMode = SelectionMode.One;
                 timer1.Start();
 
-                if (ManageBtn.Width >= 284)
+                if (AddBtn.Location.Y <= org)
                 {
-                    InstalledTransLstBx.SelectionMode = SelectionMode.MultiExtended;
+                    InstalledAddLstBx.SelectionMode = SelectionMode.MultiExtended;
                     Padding test = label5.Padding;
                     test.Right = 127;
                     label5.Padding = test;
@@ -82,6 +147,11 @@ namespace Translators
 
                 }//if this button is at the top possition (it's original location), reset rotation and set the opacity label back to default
             }
+
+        }
+
+        private void InstalledAddLstBx_SelectedIndexChanged(object sender, EventArgs e)
+        {
 
         }
 
@@ -94,7 +164,6 @@ namespace Translators
                     string clonedRepoPath = Repository.Clone("https://github.com/shadow999999/Translators-SOL"
                         , path + @"\" + enumT.Current.ToString().Replace('-', ' '), new CloneOptions { BranchName = enumT.Current.ToString() });
 
-                    //temporary and always throws exception, will remove once i figure out how to download a git repo's .zip file (i.e. not also the .git file)
                     if (Directory.Exists(path + @"\" + enumT.Current.ToString() + @"\.git"))
                     {
                         try
@@ -165,15 +234,15 @@ namespace Translators
                 }
             }
 
+            updateInstalledAddLstBx();
             //message box
 
-            //additions will be added later. Basically this will open a window which will get all branches and treat them as 'additional content' without ever pushing the branch to main
             //this will mean branches will (at some point) have delemeters indicating if it's an 'override' or an 'addition' - that is if it updates existing code/forms or adds new code/forms.
         }
 
         private void UninstallBtn_Click(object sender, EventArgs e)
         {
-            foreach (string item in InstalledTransLstBx.SelectedItems)
+            foreach (string item in InstalledAddLstBx.SelectedItems)
             {
                 if (Directory.Exists(path + @"\" + item))
                 {
@@ -181,28 +250,31 @@ namespace Translators
                 }
             }
 
-            InstalledTransLstBx.Items.Clear();
+            InstalledAddLstBx.Items.Clear();
             updateInstalledAddLstBx();
         }
-        //8
+
         private void timer1_Tick(object sender, EventArgs e)
         {
 
-            if (Size.Width >= 495 && ManageBtn.Width <= 140 && OpacityPnl.Width >= 471)
-            {//if this button is at the about buttons location
+            if (AddBtn.Location.Y >= aboutBtn.Location.Y - 35 && Size.Width >= 485 && AddBtn.Width <= 140 && OpacityPnl.Width >= 471)
+            {//if this button is at the about buttons location (bottom)
                 if (!rot)
                 {//and not rotating
                     timer1.Stop();//stop timer
                 }
 
                 OpacityPnl.Width += 10; ;
-                
+
                 Size testS = Size;
                 testS.Width += 10;//resize the form
                 Size = testS;
 
-                ManageBtn.Width = 133;
-                ManageBtn.Text = "Stop managing translators";
+                AddBtn.Width = 133;
+                AddBtn.Text = "Stop managing additions";
+                ForceUpdateBtn.Visible = false;
+                updatesBtn.Visible = false;
+                aboutBtn.Visible = false;
                 rot = true;//start rotation
             }
 
@@ -217,37 +289,53 @@ namespace Translators
                     label5.Padding = test;
                 }
 
-                if (Size.Width > 336)
+                if (Size.Width > 307)
                 {
                     Size testS = Size;
                     testS.Width -= 10;//resize the form
                     Size = testS;
                 }
-                else if (Size.Width <= 336)
+                else if (Size.Width <= 307)
                 {
-                    ManageBtn.Text = "Manage translators";
-                    ReloadDTBtn.Visible = false;
-                    DownloadTransLstBx.Visible = false;
-                    DownloadTBtn.Visible = false;
+                    ReloadDBtn.Visible = false;
+                    DownloadAddLstBx.Visible = false;
+                    DownloadBtn.Visible = false;
+                    downloadSearchTxtBx.Visible = false;
+                    clearDwnBtn.Visible = false;
                 }
 
-                if (ManageBtn.Width < 284)
-                {
-                    ManageBtn.Width += 10;
+                if (AddBtn.Location.Y > org)
+                {//and this button is not at the top (its original possition)
+                    ReloadDBtn.Visible = true;
+                    //ForceUpdateBtn.Visible = true;
+                    updatesBtn.Visible = true;
+                    aboutBtn.Visible = true;
+                    InstalledMngRsr.Height -= 5;//have the manager window move back up
+
                 }
-                else if (ManageBtn.Width > 284)
+                else if (AddBtn.Location.Y <= org)
                 {
-                    ManageBtn.Width = 284;
-                    UninstallTBtn.Visible = false;
+                    AddBtn.Text = "Manage additions";
+                }
+
+                if (AddBtn.Width < 284)
+                {
+                    AddBtn.Width += 10;
+                }
+                else if (AddBtn.Width > 284)
+                {
+                    AddBtn.Width = 284;
+                    UninstallBtn.Visible = false;
                 }
 
             }
             else
             {
-                ReloadDTBtn.Visible = true;
-                UninstallTBtn.Visible = true;
-                DownloadTransLstBx.Visible = true;
-                DownloadTBtn.Visible = true;
+                UninstallBtn.Visible = true;
+                DownloadAddLstBx.Visible = true;
+                DownloadBtn.Visible = true;
+                downloadSearchTxtBx.Visible = true;
+                clearDwnBtn.Visible = true;
 
                 if (OpacityPnl.Width < 471)
                 {
@@ -257,22 +345,28 @@ namespace Translators
                     label5.Padding = test;
                 }
 
-                if (Size.Width < 495)
+                if (Size.Width < 485)
                 {
                     Size testS = Size;
                     testS.Width += 10;//resize the form
                     Size = testS;
                 }
 
-                if (ManageBtn.Width > 140)
+                if (AddBtn.Location.Y < aboutBtn.Location.Y - 25)
                 {
-                    ManageBtn.Width -= 10;
+                    InstalledMngRsr.Height += 5;//have the manager resizeer window move down
+
+                }
+
+                if (AddBtn.Width > 140)
+                {
+                    AddBtn.Width -= 10;
                     //AddBtn.Text = "" + AddBtn.Location.X;
 
                 }
-                else if (ManageBtn.Width <= 140)
+                else if (AddBtn.Width <= 140)
                 {
-                    ManageBtn.Width = 140;
+                    AddBtn.Width = 140;
                 }
 
             }
@@ -283,7 +377,7 @@ namespace Translators
         {
             enumT = branches.GetEnumerator();
             int i = 0;
-            while (i != DownloadTransLstBx.SelectedIndex + 1)
+            while (i != DownloadAddLstBx.SelectedIndex + 1)
             {
                 enumT.MoveNext();
                 i++;
@@ -291,28 +385,93 @@ namespace Translators
             }
         }
 
-        private void InstalledAddLstBx_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void ReloadDBtn_Click(object sender, EventArgs e)
         {
-            DialogResult response = updateAvalibleAddFromRepo("https://github.com/shadow999999/Translators-SOL");
+            DownloadAddLstBx.Items.Clear();
 
+            //get all additions (git repo branches)
+            while (true)
+            {
+                try
+                {
+                    branches = Repository.ListRemoteReferences("https://github.com/shadow999999/Translators-SOL")
+                                 .Where(elem => elem.IsLocalBranch)
+                                 .Select(elem => elem.CanonicalName
+                                                     .Replace("refs/heads/", ""));
+
+                    foreach (string branch in branches)
+                    {//get each addition seperetly
+                        if (branch != "master")
+                        {
+                            string branchT = branch.Replace('-', ' ');
+                            DownloadAddLstBx.Items.Add(branchT);
+                        }//as long as the branch is not the main, add it to the list
+
+                    }
+                    enumT = branches.GetEnumerator();
+                    DownloadAddLstBx.SelectedIndex = 0;//forces ProgramsLstBx_SelectedIndexChanged to trigger
+                    break;
+                }
+                catch (LibGit2Sharp.LibGit2SharpException libGit2SharpException)
+                {
+                    if (libGit2SharpException.Message == "this remote has never connected")
+                    {
+                        DialogResult response = MessageBox.Show("An error occured; github may be down or you have no internet!",
+                            "Connectivity error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Exclamation);
+                        if (response == DialogResult.Cancel)
+                        {
+                            break;
+                        }
+                        //handle later
+                    }
+                    else
+                    {
+                        MessageBox.Show("An unknown error occured whilst trying to retreive data from github: " + libGit2SharpException.Message);
+                        break;
+                    }
+                }
+            }
         }
 
         private void InstalledAddLstBx_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (File.Exists(path + @"\" + InstalledTransLstBx.SelectedItem + @"\" + InstalledTransLstBx.SelectedItem
-                + @"\" + InstalledTransLstBx.SelectedItem + @"\bin\Debug\" + InstalledTransLstBx.SelectedItem + ".exe"))//yea i know...
+            bool processExists = false;
+            Process addition = null;
+
+            for (int i = 0; i < openedAdd.Length; i++)
             {
-                System.Diagnostics.Process.Start(path + @"\" + InstalledTransLstBx.SelectedItem + @"\" + InstalledTransLstBx.SelectedItem
-                    + @"\" + InstalledTransLstBx.SelectedItem + @"\bin\Debug\" + InstalledTransLstBx.SelectedItem + ".exe");
+                addition = openedAdd[i];
+                if (addition.ProcessName == InstalledAddLstBx.SelectedItem.ToString())
+                {
+                    processExists = true;
+                    break;
+                }
             }
-            else {
-                MessageBox.Show("Could not find executable. " + path + @"\" + InstalledTransLstBx.SelectedItem + @"\" + InstalledTransLstBx.SelectedItem
-                    + @"\" + InstalledTransLstBx.SelectedItem + @"\bin\Debug\" + InstalledTransLstBx.SelectedItem + ".exe");
+
+            if (!processExists)
+            {
+                if (File.Exists(path + @"\" + InstalledAddLstBx.SelectedItem + @"\" + InstalledAddLstBx.SelectedItem
+                + @"\" + InstalledAddLstBx.SelectedItem + @"\bin\Debug\" + InstalledAddLstBx.SelectedItem + ".exe"))//yea i know...
+                {
+                    Array.Resize(ref openedAdd, openedAdd.Length + 1);
+                    openedAdd[openedAdd.Length - 1] = Process.Start(path + @"\" + InstalledAddLstBx.SelectedItem + @"\" + InstalledAddLstBx.SelectedItem
+                        + @"\" + InstalledAddLstBx.SelectedItem + @"\bin\Debug\" + InstalledAddLstBx.SelectedItem + ".exe");
+
+                }
+                else
+                {
+                    MessageBox.Show("Could not find executable. " + path + @"\" + InstalledAddLstBx.SelectedItem + @"\" + InstalledAddLstBx.SelectedItem
+                        + @"\" + InstalledAddLstBx.SelectedItem + @"\bin\Debug\" + InstalledAddLstBx.SelectedItem + ".exe");
+                }
+            }
+            else
+            {
+                //MessageBox.Show("The program is already running.");
+                addition.Kill();
+                addition.Start();//restart the process
+                //(in order to be able to force a process to move itself to the center of the screen,
+                //the function will have to be exposed specifically by that process itself)
+
             }
 
         }
@@ -322,79 +481,334 @@ namespace Translators
             updateInstalledAddLstBx();
         }
 
-        private void toolStripButton1_Click(object sender, EventArgs e)
-        {
-            AboutBox test = new AboutBox();
-            Form isOpen = Application.OpenForms["AboutBox"];        //get if the window is still open
-                                                                    //
-            if (isOpen != null) { isOpen.Close(); }                 //if it is then close it
-                                                                    //
-            test.Show();                                            //otherwise open it
-        }
-
         private void UpdateAddBtn_Click(object sender, EventArgs e)
         {
 
         }
 
-        public void updateInstalledAddLstBx()
+        private void TranslatorsFrm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            System.Collections.ObjectModel.ReadOnlyCollection<string> adds = Microsoft.VisualBasic.FileIO.FileSystem.GetDirectories(path);
-            foreach (string add in adds)
+            foreach (Process addition in openedAdd)
             {
-                string[] pathSplit = add.Split(Convert.ToChar(92));
-                InstalledTransLstBx.Items.Add(pathSplit[pathSplit.Length - 1]);
+                if (!addition.HasExited)
+                {
+                    addition.Kill();
+                }
+
+            }
+        }
+
+        private void searchTxtBx_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (searchTxtBx.Text.Length > 0 && searchTxtBx.Text == "Search")
+            {
+                if (searchTxtBx.Focused)
+                {
+                    searchTxtBx.Text = "";
+                    searchTxtBx.ForeColor = Color.Black;
+                }
+            }
+        }
+
+        private void searchTxtBx_Leave(object sender, EventArgs e)
+        {
+            if (searchTxtBx.Text.Length <= 0)
+            {
+                searchTxtBx.Text = "Search";
+                searchTxtBx.ForeColor = Color.FromName("ControlDark");
+                InstalledAddLstBx.SelectionMode = SelectionMode.One;
+                InstalledAddLstBx.Items.Clear();
+                removed = new object[0];//stores the set of installed additions lstbx objects that where removed
+                removedIndex = new int[0];//and their respective indicies
+                updateInstalledAddLstBx();
+            }
+            else
+            {
+                InstalledAddLstBx.SelectionMode = SelectionMode.One;
+                if (InstalledAddLstBx.Items.Count > 0)
+                {
+                    InstalledAddLstBx.SelectedIndex = 0;
+                }
+
+            }
+        }
+
+        private void searchTxtBx_TextChanged(object sender, EventArgs e)
+        {
+            if (addCount > 0)
+            {
+                if (searchTxtBx.Text.Length > 0)
+                {
+                    for (int i = 0; i < removed.Length; i++)
+                    {
+                        InstalledAddLstBx.Items.Insert(removedIndex[i], removed[i]);
+                    }
+
+                    //InstalledAddLstBx.SelectionMode = SelectionMode.MultiSimple;
+                    int itemCount = InstalledAddLstBx.Items.Count;
+                    int[] tmp = new int[0];
+                    removed = new object[0];//stores the set of installed additions lstbx objects that where removed
+                    removedIndex = new int[0];//and their respective indicies
+                    InstalledAddLstBx.SelectedIndex = 0;
+
+                    //InstalledAddLstBx.ClearSelected();
+                    for (int i = 0; i < itemCount; i++)
+                    {
+                        InstalledAddLstBx.ClearSelected();
+                        InstalledAddLstBx.SetSelected(i, true);
+                        if (InstalledAddLstBx.GetItemText(InstalledAddLstBx.SelectedItem).ToLower().Contains(searchTxtBx.Text.ToLower()))
+                        {
+                            Array.Resize(ref tmp, tmp.Length + 1);
+                            tmp[tmp.Length - 1] = InstalledAddLstBx.SelectedIndex;
+
+                        }
+                        else
+                        {
+                            Array.Resize(ref removed, removed.Length + 1);
+                            Array.Resize(ref removedIndex, removedIndex.Length + 1);
+                            removed[removed.Length - 1] = InstalledAddLstBx.SelectedItem;//store the removed item
+                            removedIndex[removedIndex.Length - 1] = InstalledAddLstBx.SelectedIndex;//store the removed item's index
+                            InstalledAddLstBx.Items.RemoveAt(InstalledAddLstBx.SelectedIndex);
+                            itemCount--;//account for the fact that there is now 1 less item in the list
+                            i--;
+
+                        }
+                    }
+
+                    InstalledAddLstBx.ClearSelected();
+                    //for debugging
+                    //for (int i = 0; i < tmp.Length; i++)
+                    //{
+                    //    InstalledAddLstBx.SetSelected(tmp[i], true);
+
+                    //}
+                    if (InstalledAddLstBx.Items.Count > 0)
+                    {
+                        InstalledAddLstBx.SelectedIndex = 0;
+                    }
+
+                }
+                else
+                {
+                    InstalledAddLstBx.SelectionMode = SelectionMode.One;
+                    for (int i = 0; i < removed.Length; i++)
+                    {
+                        InstalledAddLstBx.Items.Insert(removedIndex[i], removed[i]);
+                    }
+                    removed = new object[0];//stores the set of installed additions lstbx objects that where removed
+                    removedIndex = new int[0];//and their respective indicies
+                    if (InstalledAddLstBx.Items.Count > 0)
+                    {
+                        InstalledAddLstBx.SelectedIndex = 0;
+                    }
+
+                }
             }
 
         }
 
-        public DialogResult updateAvalibleAddFromRepo(string respositoryFullURL) {
-            DownloadTransLstBx.Items.Clear();
-            DialogResult response = DialogResult.Ignore;
+        private void clearTextBtn_Click(object sender, EventArgs e)
+        {
+            searchTxtBx.Text = "Search";
+            searchTxtBx.ForeColor = Color.FromName("ControlDark");
 
-            if (ManageBtn.Width <= 495)
+            InstalledAddLstBx.SelectionMode = SelectionMode.One;
+            InstalledAddLstBx.Items.Clear();
+            removed = new object[0];//stores the set of installed additions lstbx objects that where removed
+            removedIndex = new int[0];//and their respective indicies
+            updateInstalledAddLstBx();
+
+            if (InstalledAddLstBx.Items.Count > 0)
             {
-                while (true)
+                InstalledAddLstBx.SelectedIndex = 0;
+            }
+
+        }
+
+        private void downloadSearchTxtBx_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (downloadSearchTxtBx.Text.Length > 0 && downloadSearchTxtBx.Text == "Search")
+            {
+                if (downloadSearchTxtBx.Focused)
                 {
-                    try
+                    downloadSearchTxtBx.Text = "";
+                    downloadSearchTxtBx.ForeColor = Color.Black;
+                }
+            }
+        }
+
+        private void downloadSearchTxtBx_Leave(object sender, EventArgs e)
+        {
+            if (downloadSearchTxtBx.Text.Length <= 0)
+            {
+                downloadSearchTxtBx.Text = "Search";
+                downloadSearchTxtBx.ForeColor = Color.FromName("ControlDark");
+                DownloadAddLstBx.SelectionMode = SelectionMode.One;
+                removed = new object[0];//stores the set of installed additions lstbx objects that where removed
+                removedIndex = new int[0];//and their respective indicies
+                updateDownloadAddLstBx();
+            }
+            else
+            {
+                DownloadAddLstBx.SelectionMode = SelectionMode.One;
+                if (DownloadAddLstBx.Items.Count > 0)
+                {
+                    DownloadAddLstBx.SelectedIndex = 0;
+                }
+
+            }
+        }
+
+        private void downloadSearchTxtBx_TextChanged(object sender, EventArgs e)
+        {
+            if (addCount > 0)
+            {
+                if (downloadSearchTxtBx.Text.Length > 0)
+                {
+                    for (int i = 0; i < removed.Length; i++)
                     {
-                        branches = Repository.ListRemoteReferences(respositoryFullURL)
-                                     .Where(elem => elem.IsLocalBranch)
-                                     .Select(elem => elem.CanonicalName
-                                                         .Replace("refs/heads/", ""));
-
-                        foreach (string branch in branches)
-                        {//get each addition seperetly
-                            if (branch != "master")
-                            {
-                                string branchT = branch.Replace('-', ' ');
-                                DownloadTransLstBx.Items.Add(branchT);
-                            }//as long as the branch is not the main, add it to the list
-
-                        }
-                        enumT = branches.GetEnumerator();
-                        DownloadTransLstBx.SelectedIndex = 0;//forces ProgramsLstBx_SelectedIndexChanged to trigger
-                        break;
+                        DownloadAddLstBx.Items.Insert(removedIndex[i], removed[i]);
                     }
-                    catch (LibGit2Sharp.LibGit2SharpException libGit2SharpException)
+
+                    //DownloadAddLstBx.SelectionMode = SelectionMode.MultiSimple;
+                    int itemCount = DownloadAddLstBx.Items.Count;
+                    int[] tmp = new int[0];
+                    removed = new object[0];//stores the set of installed additions lstbx objects that where removed
+                    removedIndex = new int[0];//and their respective indicies
+                    DownloadAddLstBx.SelectedIndex = 0;
+
+                    //DownloadAddLstBx.ClearSelected();
+                    for (int i = 0; i < itemCount; i++)
                     {
-                        if (libGit2SharpException.Message == "this remote has never connected")
+                        DownloadAddLstBx.ClearSelected();
+                        DownloadAddLstBx.SetSelected(i, true);
+                        if (DownloadAddLstBx.GetItemText(DownloadAddLstBx.SelectedItem).ToLower().Contains(downloadSearchTxtBx.Text.ToLower()))
                         {
-                            response = MessageBox.Show("An error occured; github may be down or you have no internet!",
-                                "Connectivity error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Exclamation);
-                            if (response == DialogResult.Cancel) { break; }
-                            //handle later
+                            Array.Resize(ref tmp, tmp.Length + 1);
+                            tmp[tmp.Length - 1] = DownloadAddLstBx.SelectedIndex;
+
                         }
                         else
                         {
-                            MessageBox.Show("An unknown error occured whilst trying to retreive data from github: " + libGit2SharpException.Message);
+                            Array.Resize(ref removed, removed.Length + 1);
+                            Array.Resize(ref removedIndex, removedIndex.Length + 1);
+                            removed[removed.Length - 1] = DownloadAddLstBx.SelectedItem;//store the removed item
+                            removedIndex[removedIndex.Length - 1] = DownloadAddLstBx.SelectedIndex;//store the removed item's index
+                            DownloadAddLstBx.Items.RemoveAt(DownloadAddLstBx.SelectedIndex);
+                            itemCount--;//account for the fact that there is now 1 less item in the list
+                            i--;
+
+                        }
+                    }
+
+                    DownloadAddLstBx.ClearSelected();
+                    //for debugging
+                    //for (int i = 0; i < tmp.Length; i++)
+                    //{
+                    //    DownloadAddLstBx.SetSelected(tmp[i], true);
+
+                    //}
+                    if (DownloadAddLstBx.Items.Count > 0)
+                    {
+                        DownloadAddLstBx.SelectedIndex = 0;
+                    }
+
+                }
+                else
+                {
+                    DownloadAddLstBx.SelectionMode = SelectionMode.One;
+                    for (int i = 0; i < removed.Length; i++)
+                    {
+                        DownloadAddLstBx.Items.Insert(removedIndex[i], removed[i]);
+                    }
+                    removed = new object[0];//stores the set of installed additions lstbx objects that where removed
+                    removedIndex = new int[0];//and their respective indicies
+                    if (DownloadAddLstBx.Items.Count > 0)
+                    {
+                        DownloadAddLstBx.SelectedIndex = 0;
+                    }
+
+                }
+            }
+        }
+
+        private void clearDwnBtn_Click(object sender, EventArgs e)
+        {
+            downloadSearchTxtBx.Text = "Search";
+            downloadSearchTxtBx.ForeColor = Color.FromName("ControlDark");
+
+            DownloadAddLstBx.SelectionMode = SelectionMode.One;
+            removed = new object[0];//stores the set of installed additions lstbx objects that where removed
+            removedIndex = new int[0];//and their respective indicies
+            updateDownloadAddLstBx();
+
+            if (DownloadAddLstBx.Items.Count > 0)
+            {
+                DownloadAddLstBx.SelectedIndex = 0;
+            }
+        }
+
+        public void updateDownloadAddLstBx()
+        {
+            DownloadAddLstBx.Items.Clear();
+
+            //get all additions (git repo branches)
+            while (true)
+            {
+                try
+                {
+                    branches = Repository.ListRemoteReferences("https://github.com/shadow999999/Translators-SOL")
+                                 .Where(elem => elem.IsLocalBranch)
+                                 .Select(elem => elem.CanonicalName
+                                                     .Replace("refs/heads/", ""));
+
+                    foreach (string branch in branches)
+                    {//get each addition seperetly
+                        if (branch != "master")
+                        {
+                            string branchT = branch.Replace('-', ' ');
+                            DownloadAddLstBx.Items.Add(branchT);
+                        }//as long as the branch is not the main, add it to the list
+
+                    }
+                    enumT = branches.GetEnumerator();
+                    DownloadAddLstBx.SelectedIndex = 0;//forces ProgramsLstBx_SelectedIndexChanged to trigger
+                    break;
+                }
+                catch (LibGit2Sharp.LibGit2SharpException libGit2SharpException)
+                {
+                    if (libGit2SharpException.Message == "this remote has never connected")
+                    {
+                        DialogResult response = MessageBox.Show("An error occured; github may be down or you have no internet!",
+                            "Connectivity error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Exclamation);
+                        if (response == DialogResult.Cancel)
+                        {
                             break;
                         }
+                        //handle later
+                    }
+                    else
+                    {
+                        MessageBox.Show("An unknown error occured whilst trying to retreive data from github: " + libGit2SharpException.Message);
+                        break;
                     }
                 }
             }
+        }
 
-            return response;
+        public void updateInstalledAddLstBx()
+        {
+            InstalledAddLstBx.Items.Clear();
+            addCount = 0;
+            System.Collections.ObjectModel.ReadOnlyCollection<string> adds = Microsoft.VisualBasic.FileIO.FileSystem.GetDirectories(path);
+            foreach (string add in adds)
+            {
+                string[] pathSplit = add.Split(Convert.ToChar(92));
+                InstalledAddLstBx.Items.Add(pathSplit[pathSplit.Length - 1]);
+                addCount++;
+
+            }
+
         }
 
     }

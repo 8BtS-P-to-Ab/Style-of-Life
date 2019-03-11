@@ -79,3 +79,4 @@ C:\Users\shado\source\repos\SOL\Resources\Additions\Translators\Translators\Tran
 C:\Users\shado\source\repos\SOL\Resources\Additions\Translators\Translators\Translators\obj\Debug\Translators.csproj.CopyComplete
 C:\Users\shado\source\repos\SOL\Resources\Additions\Translators\Translators\Translators\obj\Debug\Translators.exe
 C:\Users\shado\source\repos\SOL\Resources\Additions\Translators\Translators\Translators\obj\Debug\Translators.pdb
+C:\Users\shado\source\repos\SOL\Resources\Additions\Translators\Translators\Translators\obj\Debug\Translators.Updates.resources
