@@ -4,10 +4,10 @@
   <description asmv2:publisher="SOL" asmv2:product="SOL" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <deployment install="true" mapFileExtensions="true" co.v1:createDesktopShortcut="true" />
   <compatibleFrameworks xmlns="urn:schemas-microsoft-com:clickonce.v2">
-    <framework targetVersion="4.6.1" profile="Full" supportedRuntime="4.0.30319" />
+    <framework targetVersion="4.7.1" profile="Full" supportedRuntime="4.0.30319" />
   </compatibleFrameworks>
   <dependency>
-    <dependentAssembly dependencyType="install" codebase="SOL.exe.manifest" size="13097">
+    <dependentAssembly dependencyType="install" codebase="SOL.exe.manifest" size="12695">
       <assemblyIdentity name="SOL.exe" version="1.1.1.2" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
     </dependentAssembly>
   </dependency>

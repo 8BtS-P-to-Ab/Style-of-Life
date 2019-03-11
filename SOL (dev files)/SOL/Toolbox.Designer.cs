@@ -47,6 +47,10 @@
             this.InstalledMngRsr = new System.Windows.Forms.Panel();
             this.OpacityPnl = new System.Windows.Forms.Panel();
             this.UpdateAddBtn = new System.Windows.Forms.Button();
+            this.searchTxtBx = new System.Windows.Forms.TextBox();
+            this.clearTextBtn = new System.Windows.Forms.Button();
+            this.clearDwnBtn = new System.Windows.Forms.Button();
+            this.downloadSearchTxtBx = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.sldBrOpacity)).BeginInit();
             this.InstalledAddResizer.SuspendLayout();
             this.InstalledMngRsr.SuspendLayout();
@@ -89,7 +93,7 @@
             // AddBtn
             // 
             this.AddBtn.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.AddBtn.Location = new System.Drawing.Point(3, 216);
+            this.AddBtn.Location = new System.Drawing.Point(3, 187);
             this.AddBtn.Name = "AddBtn";
             this.AddBtn.Size = new System.Drawing.Size(283, 23);
             this.AddBtn.TabIndex = 34;
@@ -100,7 +104,7 @@
             // 
             // DownloadBtn
             // 
-            this.DownloadBtn.Location = new System.Drawing.Point(303, 283);
+            this.DownloadBtn.Location = new System.Drawing.Point(306, 283);
             this.DownloadBtn.Name = "DownloadBtn";
             this.DownloadBtn.Size = new System.Drawing.Size(77, 23);
             this.DownloadBtn.TabIndex = 37;
@@ -113,7 +117,7 @@
             // UninstallBtn
             // 
             this.UninstallBtn.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.UninstallBtn.Location = new System.Drawing.Point(147, 216);
+            this.UninstallBtn.Location = new System.Drawing.Point(147, 187);
             this.UninstallBtn.Name = "UninstallBtn";
             this.UninstallBtn.Size = new System.Drawing.Size(139, 23);
             this.UninstallBtn.TabIndex = 38;
@@ -135,9 +139,10 @@
             // 
             // ReloadDBtn
             // 
+            this.ReloadDBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.ReloadDBtn.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
             this.ReloadDBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.ReloadDBtn.Location = new System.Drawing.Point(437, 9);
+            this.ReloadDBtn.Location = new System.Drawing.Point(440, 38);
             this.ReloadDBtn.Name = "ReloadDBtn";
             this.ReloadDBtn.Size = new System.Drawing.Size(23, 23);
             this.ReloadDBtn.TabIndex = 43;
@@ -148,6 +153,7 @@
             // 
             // ReloadIBtn
             // 
+            this.ReloadIBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.ReloadIBtn.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
             this.ReloadIBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.ReloadIBtn.Location = new System.Drawing.Point(258, -1);
@@ -189,7 +195,7 @@
             this.InstalledAddLstBx.Location = new System.Drawing.Point(-1, -1);
             this.InstalledAddLstBx.MultiColumn = true;
             this.InstalledAddLstBx.Name = "InstalledAddLstBx";
-            this.InstalledAddLstBx.Size = new System.Drawing.Size(281, 208);
+            this.InstalledAddLstBx.Size = new System.Drawing.Size(281, 179);
             this.InstalledAddLstBx.Sorted = true;
             this.InstalledAddLstBx.TabIndex = 35;
             this.InstalledAddLstBx.SelectedIndexChanged += new System.EventHandler(this.ProgramsLstBx_SelectedIndexChanged);
@@ -199,11 +205,11 @@
             // 
             this.DownloadAddLstBx.FormattingEnabled = true;
             this.DownloadAddLstBx.HorizontalScrollbar = true;
-            this.DownloadAddLstBx.Location = new System.Drawing.Point(303, 9);
+            this.DownloadAddLstBx.Location = new System.Drawing.Point(306, 38);
             this.DownloadAddLstBx.MultiColumn = true;
             this.DownloadAddLstBx.Name = "DownloadAddLstBx";
             this.DownloadAddLstBx.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.DownloadAddLstBx.Size = new System.Drawing.Size(157, 264);
+            this.DownloadAddLstBx.Size = new System.Drawing.Size(157, 238);
             this.DownloadAddLstBx.Sorted = true;
             this.DownloadAddLstBx.TabIndex = 36;
             this.DownloadAddLstBx.Visible = false;
@@ -224,17 +230,17 @@
             this.InstalledAddResizer.Controls.Add(this.InstalledAddLstBx);
             this.InstalledAddResizer.Location = new System.Drawing.Point(5, 0);
             this.InstalledAddResizer.Name = "InstalledAddResizer";
-            this.InstalledAddResizer.Size = new System.Drawing.Size(281, 208);
+            this.InstalledAddResizer.Size = new System.Drawing.Size(281, 179);
             this.InstalledAddResizer.TabIndex = 40;
             // 
             // InstalledMngRsr
             // 
-            this.InstalledMngRsr.Controls.Add(this.InstalledAddResizer);
             this.InstalledMngRsr.Controls.Add(this.AddBtn);
+            this.InstalledMngRsr.Controls.Add(this.InstalledAddResizer);
             this.InstalledMngRsr.Controls.Add(this.UninstallBtn);
-            this.InstalledMngRsr.Location = new System.Drawing.Point(7, 9);
+            this.InstalledMngRsr.Location = new System.Drawing.Point(7, 38);
             this.InstalledMngRsr.Name = "InstalledMngRsr";
-            this.InstalledMngRsr.Size = new System.Drawing.Size(290, 240);
+            this.InstalledMngRsr.Size = new System.Drawing.Size(290, 211);
             this.InstalledMngRsr.TabIndex = 41;
             // 
             // OpacityPnl
@@ -257,11 +263,68 @@
             this.UpdateAddBtn.Visible = false;
             this.UpdateAddBtn.Click += new System.EventHandler(this.UpdateAddBtn_Click);
             // 
+            // searchTxtBx
+            // 
+            this.searchTxtBx.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.searchTxtBx.ForeColor = System.Drawing.SystemColors.ControlDark;
+            this.searchTxtBx.Location = new System.Drawing.Point(12, 12);
+            this.searchTxtBx.Name = "searchTxtBx";
+            this.searchTxtBx.Size = new System.Drawing.Size(281, 20);
+            this.searchTxtBx.TabIndex = 45;
+            this.searchTxtBx.Text = "Search";
+            this.searchTxtBx.MouseClick += new System.Windows.Forms.MouseEventHandler(this.textBox1_MouseClick);
+            this.searchTxtBx.TextChanged += new System.EventHandler(this.searchTxtBx_TextChanged);
+            this.searchTxtBx.Leave += new System.EventHandler(this.searchTxtBx_Leave);
+            // 
+            // clearTextBtn
+            // 
+            this.clearTextBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.clearTextBtn.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.clearTextBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.clearTextBtn.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.clearTextBtn.Location = new System.Drawing.Point(271, 12);
+            this.clearTextBtn.Name = "clearTextBtn";
+            this.clearTextBtn.Size = new System.Drawing.Size(22, 20);
+            this.clearTextBtn.TabIndex = 46;
+            this.clearTextBtn.UseVisualStyleBackColor = true;
+            this.clearTextBtn.Click += new System.EventHandler(this.clearTextBtn_Click);
+            // 
+            // clearDwnBtn
+            // 
+            this.clearDwnBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.clearDwnBtn.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.clearDwnBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.clearDwnBtn.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.clearDwnBtn.Location = new System.Drawing.Point(440, 12);
+            this.clearDwnBtn.Name = "clearDwnBtn";
+            this.clearDwnBtn.Size = new System.Drawing.Size(23, 20);
+            this.clearDwnBtn.TabIndex = 48;
+            this.clearDwnBtn.UseVisualStyleBackColor = true;
+            this.clearDwnBtn.Click += new System.EventHandler(this.clearDwnBtn_Click);
+            // 
+            // downloadSearchTxtBx
+            // 
+            this.downloadSearchTxtBx.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.downloadSearchTxtBx.ForeColor = System.Drawing.SystemColors.ControlDark;
+            this.downloadSearchTxtBx.Location = new System.Drawing.Point(306, 12);
+            this.downloadSearchTxtBx.Name = "downloadSearchTxtBx";
+            this.downloadSearchTxtBx.Size = new System.Drawing.Size(157, 20);
+            this.downloadSearchTxtBx.TabIndex = 47;
+            this.downloadSearchTxtBx.Text = "Search";
+            this.downloadSearchTxtBx.Visible = false;
+            this.downloadSearchTxtBx.MouseClick += new System.Windows.Forms.MouseEventHandler(this.downloadTxtBx_MouseClick);
+            this.downloadSearchTxtBx.TextChanged += new System.EventHandler(this.downloadTxtBx_TextChanged);
+            this.downloadSearchTxtBx.Leave += new System.EventHandler(this.downloadTxtBx_Leave);
+            // 
             // Toolbox
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(303, 365);
+            this.ClientSize = new System.Drawing.Size(306, 365);
+            this.Controls.Add(this.clearDwnBtn);
+            this.Controls.Add(this.downloadSearchTxtBx);
+            this.Controls.Add(this.clearTextBtn);
+            this.Controls.Add(this.searchTxtBx);
             this.Controls.Add(this.UpdateAddBtn);
             this.Controls.Add(this.ReloadDBtn);
             this.Controls.Add(this.OpacityPnl);
@@ -275,6 +338,7 @@
             this.MaximizeBox = false;
             this.Name = "Toolbox";
             this.Text = "Toolbox";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Toolbox_FormClosing);
             this.Load += new System.EventHandler(this.Toolbox_Load);
             ((System.ComponentModel.ISupportInitialize)(this.sldBrOpacity)).EndInit();
             this.InstalledAddResizer.ResumeLayout(false);
@@ -282,6 +346,7 @@
             this.OpacityPnl.ResumeLayout(false);
             this.OpacityPnl.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -304,6 +369,10 @@
         private System.Windows.Forms.Button ReloadDBtn;
         private System.Windows.Forms.Button ReloadIBtn;
         private System.Windows.Forms.Button UpdateAddBtn;
+        private System.Windows.Forms.TextBox searchTxtBx;
+        private System.Windows.Forms.Button clearTextBtn;
+        private System.Windows.Forms.Button clearDwnBtn;
+        private System.Windows.Forms.TextBox downloadSearchTxtBx;
     }
 }
 

@@ -1,28 +1,31 @@
 ﻿Planned Features (sorted by upcoming)\s
 
 General\i
+May be a good idea to move the 'updates' window to a seperate program which accepts '-paramater' type peramaters when starting it\i
+Accepted paramater should be path location to updates files
+\e
 May need to set the about pages' banners programatically as they may (potentially) be staticly definded
 \e
 
 SOL\i
-Closing SOL closes all other child forms
-Migrate all 'baked in' programs to the github server and remove all 'baked in' programs from the master branch
-Comments
-Search bar
 Find a way to only download a branches .zip file so that the useless '.git' folder isn't coppied too
 Overhaul update logging system to work with the additions update
 Add ability for SOL to automatically check for updates
 Add ability to force SOL to check for updates
 Add ability to force SOL to check for updates of installed additions
+Comments
+Implament word wrap for 'updates' form
 fix the installer
 3\e
 
 Counter:\i
-Empty
+Empty\e
+\i
 12\e
 
 Discord Translator:\i
-Empty
+Empty\e
+\i
 16\e
 
 Translators:\i

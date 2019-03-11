@@ -1,6 +1,0 @@
-﻿1.0.0.2\s
-Added load-time path checking
-Fixed an issue where the icon would not load as it was searching the wrong directory (was searching statically)
-Updated binaries to reflect the correct application & build versions
-Fixed an issue where it was only possible to have 1 addition installed at a time
-\e

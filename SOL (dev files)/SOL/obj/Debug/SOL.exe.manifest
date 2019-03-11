@@ -4,7 +4,7 @@
   <description asmv2:iconFile="Resources\SOLICO.ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="SOL" version="1.1.1.4" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="SOL" version="1.1.3.8" language="neutral" processorArchitecture="msil" />
     <commandLine file="SOL.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -63,8 +63,8 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SOL.exe" size="97792">
-      <assemblyIdentity name="SOL" version="1.1.1.4" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SOL.exe" size="108544">
+      <assemblyIdentity name="SOL" version="1.1.3.8" language="neutral" processorArchitecture="msil" />
     </dependentAssembly>
   </dependency>
   <file name="lib\alpine-x64\libgit2-572e4d8.so" size="1376024">
@@ -185,38 +185,34 @@
       <dsig:DigestValue>hx0wkmWnMOpWyvsR4W1KARqHVETFoNWwcetcHtUaf6M=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="Resources\Updates\_example.txt" size="913" writeableType="applicationData" />
-  <file name="Resources\Updates\_Other.txt" size="1997" writeableType="applicationData" />
-  <file name="Resources\Updates\Counter.txt" size="417" writeableType="applicationData" />
-  <file name="Resources\Updates\Mass Renamer.txt" size="1511" writeableType="applicationData" />
-  <file name="Resources\Updates\SOL.txt" size="898">
+  <file name="Resources\Updates\Example.txt" size="1642">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>XYyS8ODYzeYmWKtPXEvnKnPipQibbQTfO3mphCmhD3g=</dsig:DigestValue>
+      <dsig:DigestValue>mQFcP1lRFYlTE4LhJVZVSJVKLJglEm6vpKPwPpoujvM=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="Resources\Updates\Translators - Discord Translator.txt" size="129">
+  <file name="Resources\Updates\Other.txt" size="2041">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>cBCwxACSIaxL483qwqlIniviL4dGnorOdMmeRjD+eXw=</dsig:DigestValue>
+      <dsig:DigestValue>TWGv8qNwDlHU16mToHCi6vAJmXwArymIWb8LYrCtb9g=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="Resources\Updates\Translators.txt" size="312">
+  <file name="Resources\Updates\SOL.txt" size="1552">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>3QbW61EVUNuCjfmr6TtzdPi/eQqaVb5qS3536VtC8pk=</dsig:DigestValue>
+      <dsig:DigestValue>PkqySVA18CW/PUhgpgjwA8YeYm7GUUKlK2eRZKj3jW4=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="SOL.exe.config" size="189" />
+  <file name="SOL.exe.config" size="186" />
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <application>
       <!-- A list of the Windows versions that this application has been tested on

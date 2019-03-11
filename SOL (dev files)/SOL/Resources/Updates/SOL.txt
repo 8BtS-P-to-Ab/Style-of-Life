@@ -1,4 +1,22 @@
-﻿1.1.1.4\s
+﻿1.1.3.8\s
+'Updates' window now handles comments in the form of "//" but only works on new lines
+'Updates' window now has a search function
+\e
+
+1.1.2.7\s
+'Updates' window now reads from an addtions resources folder instead of directly from SOLs' resources
+'Updates' window now warns you if you forgot to add any delemeters
+Added a blank tab to the 'Updates' window to seperate SOLs tabs to the additions
+\e
+
+1.1.2.5\s
+Added icons (programmatically)
+Added ability to seach additions
+Processes opened by SOL are now closed when the toolbox is closed
+Trying to open another instance of a process will cause the first process to restart
+\e
+
+1.1.1.4\s
 Added load-time path checking
 Fixed an issue where the icon would not load as it was searching the wrong directory (was searching statically)
 Updated binaries to reflect the correct application & build versions
