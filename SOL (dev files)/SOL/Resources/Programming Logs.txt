@@ -50,19 +50,29 @@ For example (from CountGroupIntAmount() of Splitter.cs):
 Well that's the thing, as I said at the start, this is ONLY for the 'clean-up' phase of a project. The idea is that it's to make it as painless as possible for any other development team
 to pickup the project; instead of having them waste hours trying to figure out how your spagetee code works, YOU waste about half - if not a quater - of that time figuring it out for 
 them. Obviosuly this is only good for projects that are open source, or that you know has a high chance of other people coming around and working on the project - say like a game. It's 
-also just a nice gesture to newbie coders who have no idea what the fuck their doing, gives them a nice head start and makes the entire learning process a bit less daunting. I mean i made
-this entire scheme for an open source project - SOL - so I can only hope that it does it's job well enough to make up for the faf you deal with when editing code.
+also just as a nice gesture to newbie coders who have no idea what the fuck their doing, gives them a nice head start and makes the entire learning process a bit less daunting. I mean i 
+made this entire scheme for an open source project - SOL - so I can only hope that it does it's job well enough to make up for the faf you deal with when editing code.
 
 
 ------------------------------------------------------------How you use the update logs system------------------------------------------------------------
 The update logging system is set up in a way that all you have to do is type out a .txt file in the updates folder with only 4 things you have to keep in mind.
-1. \s states that the text before the '\s' is the version number which will appear in the list.		e.g. 1.0.2.5\s
-2. \i states that the text before the '\i' is the title of a group.									e.g. Added a toolstrip\i
-																										 Added the about and guide pages
-3. \e (belonging on its own line) states that it's the end of the \s or \i							e.g. 2	\e
-4  all text inbetween a \e is normal text that will appear in the log								e.g. Added warnings
-I also recommend numbering which line each '\e' belongs to											e.g. 1\e
-You can also right comments that the reader wont read as long as it's outside of the '\s' area		e.g. this would be a comment
+1. \s states that the text before the '\s' is the version number which will appear in the list.				e.g. 1.0.2.5\s
+2. \bc(#, #, #) states that the background colour of the node list will be the defined RGB value you may	e.g. \bc(230, 230, 253), set the background colour to a tinge of blue
+   input less than 3 colours, all non-defined colours will be 0 by default. These do not require an end		e.g. Added toolstrip\i
+   point and will ignore comma 3 and up. \bc(224, 224, 224) is the default background colour.				e.g. Added the about and guide pages
+3. \i states that the text before the '\i' is the title of a group.											e.g. Added the @\i delemeter to the 'Updates' window//the \i delemeter in this
+4. \e (belonging on its own line) states that it's the end of the \s or \i.									case will show in the reader
+5. all text inbetween a \e is normal text that will appear in the log.										e.g. 2	\e		
+8. \c(210,210,210) states that the background colour of the text this is placed on the end of, will be		e.g. Added warnings\nbc(210,210,210), set this texts' background colour to 15
+   the set RGB colour with the same rules as \bc.															points darker than the default background colour							
+6. // is a comment which when placed between a \s and a \e will not be read by the updater at all			e.g. //this is a comment which will never appear in the logger
+7. \tc(0, 0, 255) states that the all titles' text colour will be the set RGB value following the same		e.g. 1\e
+   rule as \bc. This can be placed anywhere outside of a \s area.											e.g. this is also be a comment
+8. A '@' symbol before a '\' will cause what would normally be read as a delemeter to instead be read		e.g. \tc(0, 0, 255), set the colour of the titles to pure blue
+   litterally.
+I also recommend numbering which line each '\e' belongs to.												
+You can also right comments that the reader wont read as long as it's outside of the '\s' area.			
+
 
 Have a look at the existing logs and compare it to the end result if you're still confused.
 

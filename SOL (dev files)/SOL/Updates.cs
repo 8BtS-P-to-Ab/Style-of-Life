@@ -23,7 +23,6 @@ namespace SOL
 
         private void Updates_Load(object sender, EventArgs e)
         {
-
             addCount = Toolbox.addCount;//grab the amount of installed additions from the toolbox
 
             if (Environment.CurrentDirectory.Contains(@"\Debug"))
@@ -129,6 +128,7 @@ namespace SOL
                 {
                     if (tabControler.SelectedIndex < primF)
                     {                                                               //if one of the primary tabs (SOL updates e.c.t.)
+                        listBoxAll.ForeColor = Color.FromArgb(0, 0, 0);
                         UpdateList(path + tabControler.SelectedTab.Name + ".txt", listBoxAll);      //|-- update the list
                     }
                     else {
@@ -137,6 +137,91 @@ namespace SOL
                 }
                                                                             //|
             }                                                               //|e)
+
+        }
+
+        private void clearTextBtn_Click(object sender, EventArgs e)
+        {
+            searchTxtBx.Text = "Search";
+            searchTxtBx.ForeColor = Color.FromName("ControlDark");
+            searchIndex = 0;
+
+        }
+
+        private void SearchTxtBx_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (searchTxtBx.Text.Length > 0 && searchTxtBx.Text == "Search")
+            {
+                if (searchTxtBx.Focused)
+                {
+                    searchTxtBx.Text = "";
+                    searchTxtBx.ForeColor = Color.Black;
+                }
+            }
+        }
+
+        private void SearchTxtBx_Leave(object sender, EventArgs e)
+        {
+            if (searchTxtBx.Text.Length <= 0)
+            {
+                searchTxtBx.Text = "Search";
+                searchTxtBx.ForeColor = Color.FromName("ControlDark");
+
+            }
+        }
+
+        private void SearchTxtBx_TextChanged(object sender, EventArgs e)
+        {
+            if (searchTxtBx.Text != "")
+            {
+                ushort tempSI = searchIndex;
+
+                if (addCount > 0)
+                {
+                    for (int i = 0; i < tabControler.TabCount; i++)
+                    {
+                        if (tabControler.GetControl(i).Text.ToLower().Contains(searchTxtBx.Text.ToLower()))
+                        {
+                            if (tempSI == 0)
+                            {
+                                tabControler.SelectTab(i);
+                                searchTxtBx.Focus();
+                                searchTxtBx.SelectionStart = searchTxtBx.Text.Length;
+                                break;
+                            }
+                            else
+                            {
+                                tempSI--;
+                            }
+                        }
+
+                        if (searchIndex != 0 && i == tabControler.TabCount - 1)
+                        {
+                            searchIndex--;
+                            //have this set to 0 instead of decrementing to enable wraparound
+                        }
+
+                    }
+
+                }
+            }
+
+        }
+
+        private void NextBtn_Click(object sender, EventArgs e)
+        {
+            searchIndex++;
+            SearchTxtBx_TextChanged(searchTxtBx, EventArgs.Empty);
+            //PreviousBtn.Text = searchIndex.ToString();
+        }
+
+        private void PreviousBtn_Click(object sender, EventArgs e)
+        {
+            if (searchIndex > 0)
+            {
+                searchIndex--;
+                SearchTxtBx_TextChanged(searchTxtBx, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -146,28 +231,103 @@ namespace SOL
         /// <param name="fileFullPath"></param>
         /// <param name="list"></param>
         private void UpdateList(string fileFullPath, ListBox list) {
-            int sC = 0;                                                                             //- '\s' count
-            int iC = 0;                                                                             //- '\i' count
-            int eC = 0;                                                                             //- '\e' count
-            StreamReader stream = File.OpenText(fileFullPath);                          //- open the text file's stream
+            ushort sC = 0;                                                                          //- '\s' count
+            ushort iC = 0;                                                                          //- '\i' count
+            ushort eC = 0;                                                                          //- '\e' count
+            StreamReader stream = File.OpenText(fileFullPath);                                      //- open the text file's stream
             string data = stream.ReadLine();                                                        //- read the first line of the file
                                                                                                     //
             while (!stream.EndOfStream)                                                             //T while the stream is not at the end of the file
             {                                                                                       //|
-                if (data.Contains(@"\s"))                                                           //|-T if the line is a version
+                if (data.Contains(@"\s") && !data.Contains(@"\tc"))                                 //|-T if the line is a version
                 {                                                                                   //| |
-                    list.Items.Add(data.Remove((data.Length - 2), 2));                              //|-|--- add the version to the list (without the '\s' present)
-                    sC++;                                                                           //|-|--- count the amount of times a version delemeter is found
+                    string tmp = data;
+
+                    while (tmp.Contains(@"@\s"))
+                    {
+                        int lit = tmp.IndexOf(@"@\s");
+
+                        tmp = tmp.Remove(lit, 1);
+                        
+
+                    }
+
+                    if (tmp.Contains(@"\s")) {
+                        list.Items.Add(tmp.Remove(tmp.IndexOf(@"\s"), 2));                            //|-|--- add the version to the list (without the '\s' present)
+                        sC++;                                                                           //|-|--- count the amount of times a version delemeter is found
+
+                    }
                 } else if (data.Contains(@"\i")) {                                                  //|-\c)  otherwise if the delemeter is a node
-                    iC++;                                                                           //|-|--- count the amount of times a node delemeter is found
+                    string tmp = data;
+
+                    while (tmp.Contains(@"@\i"))
+                    {
+                        int lit = tmp.IndexOf(@"@\i");
+
+                        tmp = tmp.Remove(lit, 3);
+                        
+
+                    }
+
+                    if (tmp.Contains(@"\i"))
+                    {
+                        iC++;                                                                           //|-|--- count the amount of times a node delemeter is found
+
+                    }
                 }                                                                                   //|-|e)
                                                                                                     //|
                 data = stream.ReadLine();                                                           //|-- read the next line
                                                                                                     //|
                 if (data.Contains(@"\e"))                                                           //|-T if the current delemeter is an end line
                 {                                                                                   //| |
-                    eC++;                                                                           //|-|--- count the amount of times an end delemeter is found
+                    string tmp = data;
+
+                    while (tmp.Contains(@"@\e"))
+                    {
+                        int lit = tmp.IndexOf(@"@\e");
+
+                        tmp = tmp.Remove(lit, 3);
+                        
+
+                    }
+
+                    if (tmp.Contains(@"\e"))
+                    {
+                        eC++;                                                                           //|-|--- count the amount of times an end delemeter is found
+                    }
                 }                                                                                   //|-|e)
+
+                if (data.Contains(@"\tc("))
+                {
+                    string tmp = data;
+
+                    while (tmp.Contains(@"@\tc("))
+                    {
+                        int lit = tmp.IndexOf(@"@\tc(");
+
+                        tmp = tmp.Remove(lit, 4);
+                        
+
+                    }
+
+                    if (tmp.Contains(@"\tc("))
+                    {
+                        int[] values = new int[3];
+                        bool[] parse = new bool[3];
+                        int i = 0;
+
+                        foreach (string val in data.Remove(0, 4).Replace(")", "").Replace(" ", "").Split(','))
+                        {
+                            parse[i] = int.TryParse(val, out values[i]);
+                            i++;
+                            if (i == 3) { break; }//force the system to only ever read 3 values
+
+                        }
+
+                        listBoxAll.ForeColor = Color.FromArgb(values[0], values[1], values[2]);
+                    }
+                }
+
             }                                                                                       //|L)
             stream.Close();                                                                         //- close the file
                                                                                                     //
@@ -187,6 +347,7 @@ namespace SOL
                 Close();                                                                            //|-- end the process
             }                                                                                       //|e)
 
+            listBoxAll.SelectedIndex = 0;
         }
         
         /// <summary>
@@ -206,6 +367,11 @@ namespace SOL
                     view.Nodes.Clear();         //|-|--- clear the view
                 }                               //|-|e)
                                                 //|
+                if (view.Height < max)
+                {
+                    treeViewAll.BackColor = Color.FromArgb(224, 224, 224);
+                }
+
                 ReadUpdate(fileName, view);     //|-- update the view with the updates
                                                 //|
                 while (view.Height < max)       //|-T while the height of the view is not at the max distance
@@ -234,6 +400,11 @@ namespace SOL
                                                 //| |
                 }                               //|-|L)
                                                 //|
+                if (view.Height < max)
+                {
+                    treeViewAll.BackColor = Color.FromArgb(224, 224, 224);
+                }
+
                 ReadUpdate(fileName, view);     //|-- update the view with the updates
                                                 //|
                 while (view.Height < max)       //|-T while not at max height
@@ -263,31 +434,186 @@ namespace SOL
             bool atCorrectPoint = false;                                                                                    //- stores if the header is at in the correct '\s'
             bool wraparound = false;                                                                                        //- wrap around bugfix
             int leC = 0;                                                                                                    //- store the amount of times a '\e' appears in an inner or inner inner node
+            uint poss = 1;
+            string tmp = data;
+            string tmpSan = data;
                                                                                                                             //
             while (!stream.EndOfStream)                                                                                     //T while not at the end of the update file
             {                                                                                                               //|
-                if (!data.StartsWith("//"))
+                tmp = data;
+
+                while (tmp.Contains(@"@\s") || tmp.Contains(@"@\bc"))
+                {
+                    int lit = tmp.IndexOf(@"@\s");
+                    int lit2 = tmp.IndexOf(@"@\bc");
+
+                    if (lit != -1)
+                    {
+                        tmp = tmp.Remove(lit, 1);
+                    }
+                    else if (lit2 != -1)
+                    {
+                        tmp = tmp.Remove(lit2, 3);
+
+                    }
+                    else
+                    {
+                        int dud = 0;
+                        //
+                    }
+
+                }
+
+                if (!data.StartsWith("//") && !tmp.StartsWith(@"\bc(") && ((tmp.Contains(@"\s") && tmp == listBoxAll.Text + @"\s") || atCorrectPoint ))
                 {
                     wraparound = false;                                                                                         //|-- reset wraparound
-                    if (!data.Contains(@"\s") && !data.Contains(@"\e") && !data.Contains(@"\i") && atCorrectPoint)              //|-T if the line doesn't contain any specail delimeters and the header is in the correct possition
+
+                    tmp = data;
+
+                    while (tmp.Contains(@"@\s") || tmp.Contains(@"@\e") || tmp.Contains(@"@\i"))
+                    {
+                        int lit  = tmp.IndexOf(@"@\s");
+                        int lit2 = tmp.IndexOf(@"@\e");
+                        int lit3 = tmp.IndexOf(@"@\i");
+
+                        if (lit != -1)
+                        {
+                            tmp = tmp.Remove(lit, 1);
+                            //data = data.Remove(data.IndexOf("@"),1);
+                        }
+                        else if (lit2 != -1)
+                        {
+                            tmp = tmp.Remove(lit2, 3);
+                            //
+
+                        }
+                        else if (lit3 != -1)
+                        {
+                            tmp = tmp.Remove(lit3, 3);
+                            //
+                        }
+                        else {
+                            int dud = 0;
+                            //
+                        }
+
+                    }
+
+                    if (!tmp.Contains(@"\s") && !tmp.Contains(@"\e") && !tmp.Contains(@"\i") && atCorrectPoint)              //|-T if the line doesn't contain any specail delimeters and the header is in the correct possition
                     {                                                                                                           //|-| then consider the line as normal text
-                        view.Nodes.Add(data);                                                                               //|-|--- add the line to the (node) list
-                                                                                                                            //| |
+                        tmpSan = data;
+
+                        while (tmpSan.Contains(@"@\")) {
+                            tmpSan = tmpSan.Remove(tmpSan.IndexOf("@"), 1);
+
+                        }
+
+                        TreeNode newNode = view.Nodes.Add(tmpSan);                                                                               //|-|--- add the line to the (node) list
+                        tmp = data;
+
+                        while (tmp.Contains(@"@\"))
+                        {
+                            int lit = tmp.IndexOf(@"@\");
+
+                            tmp = tmp.Remove(lit, 2);
+                            
+
+                        }
+
+                        if (newNode.Text.Contains("//"))
+                        {
+                            newNode.Text = newNode.Text.Remove(newNode.Text.IndexOf("//"));
+
+                        }
+
+                        if (tmp.Contains(@"\nbc("))
+                        {
+                            ColourNodes(newNode, poss);
+
+                        }
+
+                        if (tmp.Contains(@"\ntc("))
+                        {
+                            ColourNodesText(newNode, poss);
+
+                        }
+                        //| |
                     }
-                    else if (data.Contains(@"\s") && data == listBoxAll.Text + @"\s")
+                    else if (tmp.Contains(@"\s") && tmp == listBoxAll.Text + @"\s")
                     {                                       //|-\c)otherwise if it is a group title and the line is the selected version
-                        atCorrectPoint = true;                                                                              //|-|--- set that the header is at the correct possition
-                                                                                                                            //| |
+                        tmp = data;
+
+                        while (tmp.Contains(@"@\s"))
+                        {
+                            int lit = tmp.IndexOf(@"@\s");
+
+                            tmp = tmp.Remove(lit, 3);
+                            
+
+                        }
+
+                        if (tmp.Contains(@"\s"))
+                        {
+                            atCorrectPoint = true;                                                                              //|-|--- set that the header is at the correct possition
+                                                                                                                                //| |
+                        }
                     }
-                    else if (data.Contains(@"\i") && atCorrectPoint)
+                    else if (tmp.Contains(@"\i") && atCorrectPoint)
                     {                                                        //|-\c)otherwise if it is a node and the header is in the correct possiton
-                        iNode = view.Nodes.Add(data.Remove((data.Length - 2), 2));                                              //|-|--- add the main node
+                        tmpSan = tmp.Remove(tmp.IndexOf(@"\i", 2));
+
+                        while (tmpSan.Contains(@"@\"))
+                        {
+                            tmpSan = tmpSan.Remove(tmpSan.IndexOf("@"), 1);
+
+                        }
+
+                        iNode = view.Nodes.Add(tmpSan);                                              //|-|--- add the main node
+                        tmp = data;
+
+                        while (tmp.Contains(@"@\i"))
+                        {
+                            int lit = tmp.IndexOf(@"@\i");
+
+                            tmp = tmp.Remove(lit, 3);
+                            
+
+                        }
+
+                        if (iNode.Text.Contains("//"))
+                        {
+                            iNode.Text = iNode.Text.Remove(iNode.Text.IndexOf("//"));
+
+                        }
+
+                        while (tmp.Contains(@"@\"))
+                        {
+                            int lit = tmp.IndexOf(@"@\");
+
+                            tmp = tmp.Remove(lit, 2);
+                            
+
+                        }
+
+                        if (tmp.Contains(@"\nbc("))
+                        {
+                            ColourNodes(iNode, poss);
+
+                        }
+
+                        if (tmp.Contains(@"\ntc("))
+                        {
+                            ColourNodesText(iNode, poss);
+
+                        }
+
                         wraparound = false;                                                                                     //|-|--- reset wraparound
                         while (true)                                                                                            //|-|--T Oh my, an infinite loop!   INF
                         {                                                                                                       //| |  |
                             if (data.StartsWith("//"))
                             {
                                 data = stream.ReadLine();
+                                poss++;
                                 wraparound = true;
 
                             }
@@ -297,19 +623,71 @@ namespace SOL
                                 if (!wraparound)                                                                                    //|-|--|---T if not wrapping around
                                 {                                                                                                   //| |  |   |
                                     data = stream.ReadLine();                                                                       //|-|--|---|----- read the next line
+                                    poss++;
                                 }                                                                                                   //| |  |   |e)
                                 wraparound = false;                                                                                 //|-|--|---- reset wrap around
 
-                                if (data.Contains(@"\i"))
+                                tmp = data;
+
+                                while (tmp.Contains(@"@\i"))
+                                {
+                                    int lit = tmp.IndexOf(@"@\i");
+
+                                    tmp = tmp.Remove(lit, 3);
+                                    
+
+                                }
+
+                                if (tmp.Contains(@"\i"))
                                 {                                                                         //|-|--|---T if the line is another node
+                                    int index = tmp.IndexOf(@"\i");
                                     TreeNode[] iiNode = new TreeNode[1];                                                        //|-|--|---|----- Prepare to hold multiple inner nodes in this inner node (how meta) as iiNode
-                                    iiNode[0] = iNode.Nodes.Add(data.Remove((data.Length - 2), 2));                             //|-|--|---|----- add the inner main node
+                                    tmpSan = tmp.Remove(index, 2);
+
+                                    while (tmpSan.Contains(@"@\"))
+                                    {
+                                        tmpSan = tmpSan.Remove(tmpSan.IndexOf("@"), 1);
+
+                                    }
+
+                                    iiNode[0] = iNode.Nodes.Add(tmpSan);                             //|-|--|---|----- add the inner main node
+
+                                    if (iiNode[0].Text.Contains("//"))
+                                    {
+                                        iiNode[0].Text = iiNode[0].Text.Remove(iiNode[0].Text.IndexOf("//"));
+
+                                    }
+
+                                    tmp = data;
+
+                                    while (tmp.Contains(@"@\"))
+                                    {
+                                        int lit = tmp.IndexOf(@"@\");
+
+                                        tmp = tmp.Remove(lit, 2);
+                                        
+
+                                    }
+
+                                    if (tmp.Contains(@"\nbc("))
+                                    {
+                                        ColourNodes(iiNode[0], poss);
+
+                                    }
+
+                                    if (tmp.Contains(@"\ntc("))
+                                    {
+                                        ColourNodesText(iiNode[0], poss);
+
+                                    }
+
                                     while (true)                                                                                    //|-|--|---|----T INF loop
                                     {                                                                                               //| |  |   |    |
                                         bool comment2 = false;
                                         if (data.StartsWith("//"))
                                         {
                                             data = stream.ReadLine();
+                                            poss++;
                                             comment2 = true;
 
                                         }
@@ -320,18 +698,41 @@ namespace SOL
                                             if (!comment2)
                                             {
                                                 data = stream.ReadLine();                                                                   //|-|--|---|----|------ read the next line
+                                                poss++;
                                             }
-                                                                                                                                        //| |  |   |    |
-                                            if (data.Contains(@"\i"))                                                                   //|-|--|---|----|-----T if the line is yet ANOTHER node
+                                            //| |  |   |    |
+                                            tmp = data;
+
+                                            while (tmp.Contains(@"@\i"))
+                                            {
+                                                int lit = tmp.IndexOf(@"@\i");
+
+                                                tmp = tmp.Remove(lit, 3);
+                                                
+
+                                            }
+
+                                            if (tmp.Contains(@"\i"))                                                                   //|-|--|---|----|-----T if the line is yet ANOTHER node
                                             {                                                                                           //| |  |   |    |     |
+                                                index = tmp.IndexOf(@"\i");
                                                 Array.Resize(ref iiNode, iiNode.Length + 1);                                            //|-|--|---|----|-----|------- resize iiNode[] by making it 1 larger
-                                                iiNode[1] = iiNode[0].Nodes.Add(data.Remove((data.Length - 2), 2));                     //|-|--|---|----|-----|------- add the inner inner main node to the inner main node
+                                                tmpSan = tmp.Remove(index, 2);
+
+                                                while (tmpSan.Contains(@"@\"))
+                                                {
+                                                    tmpSan = tmpSan.Remove(tmpSan.IndexOf("@"), 1);
+
+                                                }
+
+                                                iiNode[1] = iiNode[0].Nodes.Add(tmpSan);                     //|-|--|---|----|-----|------- add the inner inner main node to the inner main node
+
                                                 while (true)                                                                            //|-|--|---|----|-----|------T INF loop
                                                 {                                                                                       //| |  |   |    |     |      |
                                                     bool comment3 = false;
                                                     if (data.StartsWith("//"))
                                                     {
                                                         data = stream.ReadLine();
+                                                        poss++;
                                                         comment3 = true;
 
                                                     }
@@ -340,149 +741,548 @@ namespace SOL
                                                         if (!comment3)
                                                         {
                                                             data = stream.ReadLine();                                                           //|-|--|---|----|-----|------|-------- read the next line
+                                                            poss++;
                                                         }
 
-                                                        if (data.Contains(@"\i"))                                                           //|-|--|---|----|-----|------|-------T if there is YER ANOTHER NODE
+                                                        tmp = data;
+
+                                                        while (tmp.Contains(@"@\i"))
+                                                        {
+                                                            int lit = tmp.IndexOf(@"@\i");
+
+                                                            tmp = tmp.Remove(lit, 3);
+                                                            
+
+                                                        }
+
+                                                        if (tmp.Contains(@"\i"))                                                           //|-|--|---|----|-----|------|-------T if there is YER ANOTHER NODE
                                                         {                                                                                   //| |  |   |    |     |      |       |
+                                                            index = tmp.IndexOf(@"\i");
                                                             Array.Resize(ref iiNode, iiNode.Length + 1);                                    //|-|--|---|----|-----|------|-------|--------- resize iiNode[] by making it 1 larger
-                                                            iiNode[i + 1] = iiNode[i].Nodes.Add(data.Remove((data.Length - 2), 2));         //|-|--|---|----|-----|------|-------|--------- add the inner inner inner main node
+                                                            tmpSan = tmp.Remove(index, 2);
+
+                                                            while (tmpSan.Contains(@"@\"))
+                                                            {
+                                                                tmpSan = tmpSan.Remove(tmpSan.IndexOf("@"), 1);
+
+                                                            }
+
+                                                            iiNode[i + 1] = iiNode[i].Nodes.Add(tmpSan);         //|-|--|---|----|-----|------|-------|--------- add the inner inner inner main node
+
                                                             i++;                                                                            //|-|--|---|----|-----|------|-------|--------- count loop for any further inner node additions
                                                         }                                                                                   //| |  |   |    |     |      |       |e)
                                                                                                                                             //| |  |   |    |     |      |
-                                                        if (leC < iiNode.Length - 2 && data.Contains(@"\e"))
+                                                        tmp = data;
+
+                                                        while (tmp.Contains(@"@\e"))
+                                                        {
+                                                            int lit = tmp.IndexOf(@"@\e");
+
+                                                            tmp = tmp.Remove(lit, 3);
+                                                            
+
+                                                        }
+
+                                                        if (leC < iiNode.Length - 2 && tmp.Contains(@"\e"))
                                                         {                                //|-|--|---|----|-----|------|-------T if local count of '\e' is less than the amount of nodes-2 and the current line is '\e' (enforces that \e must be present for each \i)
                                                             leC++;                                                                          //|-|--|---|----|-----|------|-------|-------- itterate local count of '\e'
                                                             i--;                                                                            //|-|--|---|----|-----|------|-------|-------- step back up one node
                                                         }
-                                                        else if (data.Contains(@"\e"))
+                                                        else if (tmp.Contains(@"\e"))
                                                         {                                                  //|-|--|---|----|-----|------|-------\c) otherwise if the current line is '\e' (where at the last 2)
                                                             data = stream.ReadLine();                                                       //|-|--|---|----|-----|------|-------|-------- read the next line
+                                                            poss++;
                                                             leC = 0;                                                                        //|-|--|---|----|-----|------|-------|-------- reset local '\e' count
                                                             break;                                                                          //|-|--|---|----|-----|------|>>>>>>>|>>>>>>>> BREAK;
                                                         }                                                                                   //| |  |   |    |     |      |       |e)
                                                                                                                                             //| |  |   |    |     |      |               
-                                                        if (!data.Contains(@"\i") && !data.Contains(@"\e"))                                 //|-|--|---|----|-----|------|-------T if the current line isn't a new node nor an end (!'\i' nor '\e')
+                                                        tmp = data;
+
+                                                        while (tmp.Contains(@"@\i") || tmp.Contains(@"@\e"))
+                                                        {
+                                                            int lit = tmp.IndexOf(@"@\i");
+                                                            int lit2 = tmp.IndexOf(@"@\e");
+
+                                                            if (lit != -1)
+                                                            {
+                                                                tmp = tmp.Remove(lit, 3);
+                                                                
+                                                            }
+                                                            else if (lit2 != -1)
+                                                            {
+                                                                tmp = tmp.Remove(lit2, 3);
+                                                                
+
+                                                            }
+                                                            else {
+                                                                int dud = 0;
+                                                                //report an error
+                                                            }
+
+                                                        }
+
+                                                        if (!tmp.Contains(@"\i") && !tmp.Contains(@"\e"))                                 //|-|--|---|----|-----|------|-------T if the current line isn't a new node nor an end (!'\i' nor '\e')
                                                         {                                                                                   //| |  |   |    |     |      |       |
-                                                            iiNode[i].Nodes.Add(data);                                                      //|-|--|---|----|-----|------|-------|-------- add the inner inner inner nodes...
+
+                                                            tmpSan = data;
+
+                                                            while (tmpSan.Contains(@"@\"))
+                                                            {
+                                                                tmpSan = tmpSan.Remove(tmpSan.IndexOf("@"), 1);
+
+                                                            }
+
+                                                            iiNode[i].Nodes.Add(tmpSan);                                                      //|-|--|---|----|-----|------|-------|-------- add the inner inner inner nodes...
+
+                                                            if (iiNode[i].Nodes[iiNode[i].Nodes.Count - 1].Text.Contains("//"))
+                                                            {
+                                                                iiNode[i].Nodes[iiNode[i].Nodes.Count - 1].Text =
+                                                                iiNode[i].Nodes[iiNode[i].Nodes.Count - 1].Text.Remove(iiNode[i].Nodes[iiNode[i].Nodes.Count - 1].Text.IndexOf("//"));
+
+                                                            }
+
+                                                            tmp = data;
+
+                                                            while (tmp.Contains(@"@\nbc") || tmp.Contains(@"@\ntc"))
+                                                            {
+                                                                int lit = tmp.IndexOf(@"@\nbc");
+                                                                int lit2 = tmp.IndexOf(@"@\ntc");
+
+                                                                if (lit != -1)
+                                                                {
+                                                                    tmp = tmp.Remove(lit, 3);
+                                                                    
+                                                                }
+                                                                else if (lit2 != -1)
+                                                                {
+                                                                    tmp = tmp.Remove(lit2, 3);
+                                                                    
+
+                                                                }
+                                                                else
+                                                                {
+                                                                    int dud = 0;
+                                                                    //report an error
+                                                                }
+
+                                                            }
+
+                                                            if (tmp.Contains(@"\nbc("))
+                                                            {
+                                                                ColourNodes(iiNode[i].Nodes, poss);
+
+                                                            }
+
+                                                            if (tmp.Contains(@"\ntc("))
+                                                            {
+                                                                ColourNodesText(iiNode[i].Nodes, poss);
+
+                                                            }
+
                                                         }                                                                                   //|-|--|---|----|-----|------|-------|e)
+
+                                                        foreach (var node in iiNode)
+                                                        {
+                                                            if (node.Text.Contains("//"))
+                                                            {
+                                                                node.Text = node.Text.Remove(node.Text.IndexOf("//"));
+
+                                                            }
+                                                        }
+
+                                                        tmp = data;
+
+                                                        while (tmp.Contains(@"@\nbc") || tmp.Contains(@"@\ntc"))
+                                                        {
+                                                            int lit = tmp.IndexOf(@"@\nbc");
+                                                            int lit2 = tmp.IndexOf(@"@\ntc");
+
+                                                            if (lit != -1)
+                                                            {
+                                                                tmp = tmp.Remove(lit, 3);
+                                                                
+                                                            }
+                                                            else if (lit2 != -1)
+                                                            {
+                                                                tmp = tmp.Remove(lit2, 3);
+                                                                
+
+                                                            }
+                                                            else
+                                                            {
+                                                                int dud = 0;
+                                                                //report an error
+                                                            }
+
+                                                        }
+
+                                                        if (tmp.Contains(@"\nbc("))
+                                                        {
+                                                            ColourNodes(iiNode, poss);
+
+                                                        }
+
+                                                        if (tmp.Contains(@"\ntc("))
+                                                        {
+                                                            ColourNodesText(iiNode, poss);
+
+                                                        }
+
                                                     }
                                                 }                                                                                       //|-|--|---|----|-----|------|INF)
                                             }                                                                                           //|-|--|---|----|-----|e)
                                                                                                                                         //| |  |   |    |
-                                            if (data.Contains(@"\e"))                                                                   //|-|--|---|----|-----T if the current line is an end ('\e')
+                                            tmp = data;
+
+                                            while (tmp.Contains(@"@\e"))
+                                            {
+                                                int lit = tmp.IndexOf(@"@\e");
+
+                                                tmp = tmp.Remove(lit, 3);
+                                                
+
+                                            }
+
+                                            if (tmp.Contains(@"\e"))                                                                   //|-|--|---|----|-----T if the current line is an end ('\e')
                                             {                                                                                           //| |  |   |    |     |
                                                 data = stream.ReadLine();                                                               //|-|--|---|----|-----|------- read the next line
+                                                poss++;
                                                 break;                                                                                  //|-|--|---|----|>>>>>|>>>>>>> BREAK;
                                             }                                                                                           //|-|--|---|----|-----|e)
                                                                                                                                         //| |  |   |    |     
-                                            if (!data.Contains(@"\i") && !data.Contains(@"\e") && !data.StartsWith("//"))                                         //|-|--|---|----|-----T if the current line is a normal line
+                                            tmp = data;
+
+                                            while (tmp.Contains(@"@\i") || tmp.Contains(@"@\e"))
+                                            {
+                                                int lit = tmp.IndexOf(@"@\i");
+                                                int lit2 = tmp.IndexOf(@"@\e");
+
+                                                if (lit != -1)
+                                                {
+                                                    tmp = tmp.Remove(lit, 3);
+                                                    
+                                                }
+                                                else if (lit2 != -1)
+                                                {
+                                                    tmp = tmp.Remove(lit2, 3);
+                                                    
+
+                                                }
+                                                else
+                                                {
+                                                    int dud = 0;
+                                                    //report an error
+                                                }
+
+                                            }
+
+                                            if (!tmp.Contains(@"\i") && !tmp.Contains(@"\e") && !data.StartsWith("//"))                                         //|-|--|---|----|-----T if the current line is a normal line
                                             {                                                                                           //| |  |   |    |     |
-                                                iiNode[0].Nodes.Add(data);                                                              //|-|--|---|----|-----|------- add the inner inner nodes
+                                                tmpSan = data;
+
+                                                while (tmpSan.Contains(@"@\"))
+                                                {
+                                                    tmpSan = tmpSan.Remove(tmpSan.IndexOf("@"), 1);
+
+                                                }
+
+                                                iiNode[0].Nodes.Add(tmpSan);                                                              //|-|--|---|----|-----|------- add the inner inner nodes
+
                                             }                                                                                           //|-|--|---|----|-----|e)
+
+                                            if (iiNode[0].Text.Contains("//"))
+                                            {
+                                                iiNode[0].Text = iiNode[0].Text.Remove(iiNode[0].Text.IndexOf("//"));
+
+                                            }
+
+                                            tmp = data;
+
+                                            while (tmp.Contains(@"@\nbc") || tmp.Contains(@"@\ntc"))
+                                            {
+                                                int lit = tmp.IndexOf(@"@\nbc");
+                                                int lit2 = tmp.IndexOf(@"@\ntc");
+
+                                                if (lit != -1)
+                                                {
+                                                    tmp = tmp.Remove(lit, 3);
+                                                    
+                                                }
+                                                else if (lit2 != -1)
+                                                {
+                                                    tmp = tmp.Remove(lit2, 3);
+                                                    
+
+                                                }
+                                                else
+                                                {
+                                                    int dud = 0;
+                                                    //report an error
+                                                }
+
+                                            }
+
+                                            if (tmp.Contains(@"\nbc("))
+                                            {
+                                                ColourNodes(iiNode[0].Nodes, poss);
+
+                                            }
+
+                                            if (tmp.Contains(@"\ntc("))
+                                            {
+                                                ColourNodesText(iiNode[0].Nodes, poss);
+
+                                            }
+
                                         }
 
                                     }                                                                                               //|-|--|---|----|INF)
                                 }                                                                                                   //|-|--|---|e)
                                                                                                                                     //| |  |
-                                if (data.Contains(@"\e"))                                                                           //|-|--|---T if the current line is the end line
+                                tmp = data;
+
+                                while (tmp.Contains(@"@\e"))
+                                {
+                                    int lit = tmp.IndexOf(@"@\e");
+
+                                    tmp = tmp.Remove(lit, 3);
+                                    
+
+                                }
+
+                                if (tmp.Contains(@"\e"))                                                                           //|-|--|---T if the current line is the end line
                                 {                                                                                                   //| |  |   |
                                     data = stream.ReadLine();                                                                       //|-|--|---|----- read the next line
+                                    poss++;
                                     wraparound = true;                                                                              //|-|--|---|----- activate wraparound
                                     break;                                                                                          //|-|--|>>>|>>>>> BREAK;
                                 }                                                                                                   //|-|--|---|e)
                                                                                                                                     //| |  |
-                                if (!data.Contains(@"\i") && !data.Contains(@"\e") && !data.StartsWith("//"))                                                 //|-|--|---T if the current line is a normal line
+                                tmp = data;
+
+                                while (tmp.Contains(@"@\i") || tmp.Contains(@"@\e"))
+                                {
+                                    int lit = tmp.IndexOf(@"@\i");
+                                    int lit2 = tmp.IndexOf(@"@\e");
+
+                                    if (lit != -1)
+                                    {
+                                        tmp = tmp.Remove(lit, 3);
+                                        
+                                    }
+                                    else if (lit2 != -1)
+                                    {
+                                        tmp = tmp.Remove(lit2, 3);
+                                        
+
+                                    }
+                                    else
+                                    {
+                                        int dud = 0;
+                                        //report an error
+                                    }
+
+                                }
+
+                                if (!tmp.Contains(@"\i") && !tmp.Contains(@"\e") && !data.StartsWith("//"))                                                 //|-|--|---T if the current line is a normal line
                                 {                                                                                                   //| |  |   |
-                                    iNode.Nodes.Add(data);//add the inner nodes                                                     //|-|--|---|----- add the inner nodes
+                                    tmpSan = data;
+
+                                    while (tmpSan.Contains(@"@\"))
+                                    {
+                                        tmpSan = tmpSan.Remove(tmpSan.IndexOf("@"), 1);
+
+                                    }
+
+                                    iNode.Nodes.Add(tmpSan);//add the inner nodes                                                     //|-|--|---|----- add the inner nodes
+
+                                    foreach (TreeNode node in iNode.Nodes)
+                                    {
+                                        if (node.Text.Contains("//"))
+                                        {
+                                            node.Text = node.Text.Remove(node.Text.IndexOf("//"));
+
+                                        }
+                                    }
+
+                                    tmp = data;
+
+                                    while (tmp.Contains(@"@\nbc") || tmp.Contains(@"@\ntc"))
+                                    {
+                                        int lit = tmp.IndexOf(@"@\nbc");
+                                        int lit2 = tmp.IndexOf(@"@\ntc");
+
+                                        if (lit != -1)
+                                        {
+                                            tmp = tmp.Remove(lit, 3);
+                                            
+                                        }
+                                        else if (lit2 != -1)
+                                        {
+                                            tmp = tmp.Remove(lit2, 3);
+                                            
+
+                                        }
+                                        else
+                                        {
+                                            int dud = 0;
+                                            //report an error
+                                        }
+
+                                    }
+
+                                    if (tmp.Contains(@"\nbc("))
+                                    {
+                                        ColourNodes(iNode.Nodes, poss);
+
+                                    }
+
+                                    if (tmp.Contains(@"\ntc("))
+                                    {
+                                        ColourNodesText(iNode.Nodes, poss);
+
+                                    }
+
                                 }                                                                                                   //| |  |   |e)
                                                                                                                                     //| |  |
-                                if (data.Contains(@"\i"))
-                                {                                                                         //|-|--|---T if the current line is a new node
-                                    wraparound = true;                                                                              //|-|--|---|----- activate wraparound
-                                }                                                                                                   //|-|--|---|e)
+                                tmp = data;
+
+                                if (tmp != null)
+                                {
+                                    while (tmp.Contains(@"@\i"))
+                                    {
+                                        int lit = tmp.IndexOf(@"@\i");
+                                        tmp = tmp.Remove(lit, 3);
+                                        
+
+                                    }
+
+                                    if (tmp.Contains(@"\i"))
+                                    {                                                                         //|-|--|---T if the current line is a new node
+                                        wraparound = true;                                                                              //|-|--|---|----- activate wraparound
+                                    }                                                                                                   //|-|--|---|e)
+                                }
                             }
 
                         }                                                                                                       //|-|--|INF)
                     }                                                                                                           //|-|e)
                                                                                                                                 //|
-                    if (data.Contains(@"\e") && atCorrectPoint)                                                                 //|-T if the current line is an end and the head is at the correct possition
-                    { break; }                                                                                                  //|>|e)> BREAK;
+                    tmp = data;
+
+                    if (tmp != null)
+                    {
+                        while (tmp.Contains(@"@\e"))
+                        {
+                            int lit = tmp.IndexOf(@"@\e");
+
+                            tmp = tmp.Remove(lit, 2);
+                            
+
+                        }
+
+                        if (tmp.Contains(@"\e") && atCorrectPoint)                                                                 //|-T if the current line is an end and the head is at the correct possition
+                        { break; }                                                                                                  //|>|e)> BREAK;
+                    }
                                                                                                                                 //|
                     if (!wraparound)                                                                                            //|-T if wraparound is not active
                     {                                                                                                           //| |
                         data = stream.ReadLine();                                                                               //|-|--- read the next line
+                        poss++;
                     }                                                                                                           //|-|e)
                 }
                 else {
                     data = stream.ReadLine();
+                    poss++;
 
+                }
+
+                tmp = data;
+
+                if (tmp != null)
+                {
+                    while (tmp.Contains(@"@\bc"))
+                    {
+                        int lit = tmp.IndexOf(@"@\bc");
+
+                        tmp = tmp.Remove(lit, 2);
+                        
+
+                    }
+
+                    if (tmp.Contains(@"\bc(") && atCorrectPoint)
+                    {
+                        int[] values = new int[3];
+                        bool[] parse = new bool[3];
+                        int i = 0;
+
+                        foreach (string val in data.Remove(0, 4).Replace(")", "").Replace(" ", "").Split(','))
+                        {
+                            parse[i] = int.TryParse(val, out values[i]);
+                            i++;
+                            if (i == 3) { break; }//force the system to only ever read 3 values
+
+                        }
+
+                        treeViewAll.BackColor = Color.FromArgb(values[0], values[1], values[2]);
+
+                    }
                 }
 
             }                                                                                                               //|L)
             stream.Close();                                                                                                 //- close the file
         }
 
-        private void clearTextBtn_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Colours the text of all child nodes in the targeted primary/secondary node according to the parameters of a \c delemeter in the nodes name
+        /// </summary>
+        /// <param name="nodes"></param>
+        /// <param name="possition"></param>
+        private void ColourNodesText(TreeNodeCollection nodes, uint possition = 0)
         {
-            searchTxtBx.Text = "Search";
-            searchTxtBx.ForeColor = Color.FromName("ControlDark");
-            searchIndex = 0;
+            int index = 0;
+            int[] values = new int[3];
+            bool[] parse = new bool[3];
+            string tmpExtra = "";
 
-        }
-
-        private void SearchTxtBx_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (searchTxtBx.Text.Length > 0 && searchTxtBx.Text == "Search")
+            foreach (TreeNode node in nodes)
             {
-                if (searchTxtBx.Focused)
-                {
-                    searchTxtBx.Text = "";
-                    searchTxtBx.ForeColor = Color.Black;
-                }
-            }
-        }
-
-        private void SearchTxtBx_Leave(object sender, EventArgs e)
-        {
-            if (searchTxtBx.Text.Length <= 0)
-            {
-                searchTxtBx.Text = "Search";
-                searchTxtBx.ForeColor = Color.FromName("ControlDark");
-                
-            }
-        }
-
-        private void SearchTxtBx_TextChanged(object sender, EventArgs e)
-        {
-            if (searchTxtBx.Text != "")
-            {
-                ushort tempSI = searchIndex;
-
-                if (addCount > 0)
-                {
-                    for (int i = 0; i < tabControler.TabCount; i++)
+                int i = 0;
+                index = node.Text.IndexOf(@"\ntc(");
+                if (index != -1)
+                {//if index == -1, then there is no \c delemeter found and skip it
+                    if (node.Text.IndexOf(@")\") != -1)
                     {
-                        if (tabControler.GetControl(i).Text.ToLower().Contains(searchTxtBx.Text.ToLower()))
-                        {
-                            if (tempSI == 0)
-                            {
-                                tabControler.SelectTab(i);
-                                searchTxtBx.Focus();
-                                searchTxtBx.SelectionStart = searchTxtBx.Text.Length;
-                                break;
-                            }
-                            else
-                            {
-                                tempSI--;
-                            }
-                        }
+                        tmpExtra = node.Text.Remove(0, node.Text.IndexOf(@")\") + 1);
+                        node.Text = node.Text.Remove(node.Text.IndexOf(@")\") + 1);
+                    }
+                    string[] stringVals = node.Text.Remove(0, index + 5).Replace(")", "").Replace(" ", "").Split(',');
 
-                        if (searchIndex != 0 && i == tabControler.TabCount-1)
-                        {
-                            searchIndex--;
-                            //have this set to 0 instead of decrementing to enable wraparound
-                        }
+                    foreach (string val in stringVals)
+                    {
+                        parse[i] = int.TryParse(val, out values[i]);
+                        i++;
+                        if (i == 3) { break; }//force the system to only ever read 3 values
 
+                    }
+
+                    node.ForeColor = Color.FromArgb(values[0], values[1], values[2]);//assign the background colour of the node to the alpha,red,green,blue values
+
+                    int endIndex = node.Text.IndexOf(values[2] + ")") + values[2].ToString().Length - index + 1;
+                    node.Text = node.Text.Remove(index, endIndex) + tmpExtra;//set the nodes' text to not include the delemeter and its parameters
+
+                    if (possition > 0)
+                    {
+                        if (!parse[0] || !parse[1] || !parse[2])
+                        {//if any did not parse
+                            MessageBox.Show(@"The update logger system saw a colour (\nbc) delemeter at line "
+                                    + possition + " but could not find all the values associated with it, the missing values"
+                                    + " have been set to 0." + "\r\nCan see red value? " + parse[0] + " "
+                                    + stringVals[0] + "\r\nCan see green value? " + parse[1] + " " + stringVals[1]
+                                    + "\r\nCan see blue value? " + parse[2] + " " + stringVals[2]
+                                    , "Invalid colour set in colour delemeter", MessageBoxButtons.OK
+                                    , MessageBoxIcon.Information);
+
+                        }
                     }
 
                 }
@@ -490,26 +1290,287 @@ namespace SOL
 
         }
 
-        private void NextBtn_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Colours the text of a single target node (the primary nodes) according to the parameters of a \c delemeter in the nodes name
+        /// </summary>
+        /// <param name="node">The node to affect</param>
+        /// <param name="data">The string of data which contains the delemeter and that will be applied to the node</param>
+        /// <param name="possition">An optional parameter which points to the current line the string of data comes from, excluding this disables warnings</param>
+        private void ColourNodesText(TreeNode node, uint possition = 0)
         {
-            searchIndex++;
-            SearchTxtBx_TextChanged(searchTxtBx, EventArgs.Empty);
-            //PreviousBtn.Text = searchIndex.ToString();
-        }
+            int index = node.Text.IndexOf(@"\ntc(");
+            int[] values = new int[3];
+            bool[] parse = new bool[3];
+            int i = 0;
+            string tmpExtra = "";
 
-        private void PreviousBtn_Click(object sender, EventArgs e)
-        {
-            if (searchIndex > 0)
+            if (index != -1)
             {
-                searchIndex--;
-                SearchTxtBx_TextChanged(searchTxtBx, EventArgs.Empty);
+                if (node.Text.IndexOf(@")\") != -1)
+                {
+                    tmpExtra = node.Text.Remove(0, node.Text.IndexOf(@")\") + 1);
+                    node.Text = node.Text.Remove(node.Text.IndexOf(@")\") + 1);
+                }
+                string[] stringVals = node.Text.Remove(0, index + 5).Replace(")", "").Replace(" ", "").Split(',');
+
+                foreach (string val in stringVals)
+                {
+                    parse[i] = int.TryParse(val, out values[i]);
+                    i++;
+                    if (i == 3) { break; }//force the system to only ever read 3 values
+
+                }
+
+                node.ForeColor = Color.FromArgb(values[0], values[1], values[2]);//assign the background colour of the node to the alpha,red,green,blue values
+
+                int endIndex = node.Text.IndexOf(values[2] + ")") + values[2].ToString().Length - index + 1;
+                node.Text = node.Text.Remove(index, endIndex) + tmpExtra;//set the nodes' text to not include the delemeter and its parameters
+
+                if (possition > 0)
+                {
+                    if (!parse[0] || !parse[1] || !parse[2])
+                    {//if any did not parse
+                        MessageBox.Show(@"The update logger system saw a colour (\nbc) delemeter at line "
+                            + possition + " but could not find all the values associated with it, the missing values"
+                            + " have been set to 0." + "\r\nCan see red value? " + parse[0] + " "
+                            + stringVals[0] + "\r\nCan see green value? " + parse[1] + " " + stringVals[1]
+                            + "\r\nCan see blue value? " + parse[2] + " " + stringVals[2]
+                            , "Invalid colour set in colour delemeter", MessageBoxButtons.OK
+                            , MessageBoxIcon.Information);
+
+                    }
+                }
             }
         }
+
+        /// <summary>
+        /// Colours the text of the targeted secondary nodes according to the parameters of a \c delemeter in the nodes name
+        /// </summary>
+        /// <param name="nodes">The nodes to affect</param>
+        /// <param name="possition">An optional parameter which points to the current line the string of data comes from, excluding this disables warnings</param>
+        private void ColourNodesText(TreeNode[] nodes, uint possition = 0)
+        {
+            int index = 0;
+            int[] values = new int[3];
+            bool[] parse = new bool[3];
+            string tmpExtra = "";
+
+            foreach (TreeNode node in nodes)
+            {
+                int i = 0;
+                index = node.Text.IndexOf(@"\ntc(");
+                if (index != -1)
+                {//if index == -1, then there is no \c delemeter found
+                    if (node.Text.IndexOf(@")\") != -1)
+                    {
+                        tmpExtra = node.Text.Remove(0, node.Text.IndexOf(@")\") + 1);
+                        node.Text = node.Text.Remove(node.Text.IndexOf(@")\") + 1);
+                    }
+                    string[] stringVals = node.Text.Remove(0, index + 5).Replace(")", "").Replace(" ", "").Split(',');
+
+                    foreach (string val in stringVals)
+                    {
+                        parse[i] = int.TryParse(val, out values[i]);
+                        i++;
+                        if (i == 3) { break; }//force the system to only ever read 3 values
+
+                    }
+
+                    node.ForeColor = Color.FromArgb(values[0], values[1], values[2]);//assign the background colour of the node to the alpha,red,green,blue values
+
+                    int endIndex = node.Text.IndexOf(values[2] + ")") + values[2].ToString().Length - index + 1;
+                    node.Text = node.Text.Remove(index, endIndex) + tmpExtra;//set the nodes' text to not include the delemeter and its parameters
+
+                    if (possition > 0)
+                    {
+                        if (!parse[0] || !parse[1] || !parse[2])
+                        {//if any did not parse
+                            MessageBox.Show(@"The update logger system saw a colour (\nbc) delemeter at line "
+                            + possition + " but could not find all the values associated with it, the missing values"
+                            + " have been set to 0." + "\r\nCan see red value? " + parse[0] + " "
+                            + stringVals[0] + "\r\nCan see green value? " + parse[1] + " " + stringVals[1]
+                            + "\r\nCan see blue value? " + parse[2] + " " + stringVals[2]
+                            , "Invalid colour set in colour delemeter", MessageBoxButtons.OK
+                            , MessageBoxIcon.Information);
+
+                        }
+                    }
+                }
+            }
+
+        }
+
+
+        /// <summary>
+        /// Colours all child nodes in the targeted primary/secondary node according to the parameters of a \c delemeter in the nodes name
+        /// </summary>
+        /// <param name="nodes"></param>
+        /// <param name="possition"></param>
+        private void ColourNodes(TreeNodeCollection nodes, uint possition = 0)
+        {
+            int index = 0;
+            int[] values = new int[3];
+            bool[] parse = new bool[3];
+            string tmpExtra = "";
+
+            foreach (TreeNode node in nodes)
+            {
+                int i = 0;
+                index = node.Text.IndexOf(@"\nbc(");
+                if (index != -1)
+                {//if index == -1, then there is no \c delemeter found and skip it
+                    if (node.Text.IndexOf(@")\") != -1)
+                    {
+                        tmpExtra = node.Text.Remove(0, node.Text.IndexOf(@")\") + 1);
+                        node.Text = node.Text.Remove(node.Text.IndexOf(@")\") + 1);
+                    }
+                    string[] stringVals = node.Text.Remove(0, index + 5).Replace(")", "").Replace(" ", "").Split(',');
+
+                    foreach (string val in stringVals)
+                    {
+                        parse[i] = int.TryParse(val, out values[i]);
+                        i++;
+                        if (i == 3) { break; }//force the system to only ever read 3 values
+
+                    }
+
+                    node.BackColor = Color.FromArgb(values[0], values[1], values[2]);//assign the background colour of the node to the alpha,red,green,blue values
+
+                    int endIndex = node.Text.IndexOf(values[2] + ")") + values[2].ToString().Length - index + 1;
+                    node.Text = node.Text.Remove(index, endIndex) + tmpExtra;//set the nodes' text to not include the delemeter and its parameters
+
+                    if (possition > 0 && index != -1)
+                    {
+                        if (!parse[0] || !parse[1] || !parse[2])
+                        {//if any did not parse
+                            MessageBox.Show(@"The update logger system saw a colour (\nbc) delemeter at line "
+                                + possition + " but could not find all the values associated with it, the missing values"
+                                + " have been set to 0." + "\r\nCan see red value? " + parse[0] + " "
+                                + stringVals[0] + "\r\nCan see green value? " + parse[1] + " " + stringVals[1]
+                                + "\r\nCan see blue value? " + parse[2] + " " + stringVals[2]
+                                , "Invalid colour set in colour delemeter", MessageBoxButtons.OK
+                                , MessageBoxIcon.Information);
+
+                        }
+                    }
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Colours a single target node (the primary nodes) according to the parameters of a \c delemeter in the nodes name
+        /// </summary>
+        /// <param name="node">The node to affect</param>
+        /// <param name="data">The string of data which contains the delemeter and that will be applied to the node</param>
+        /// <param name="possition">An optional parameter which points to the current line the string of data comes from, excluding this disables warnings</param>
+        private void ColourNodes(TreeNode node, uint possition = 0)
+        {
+            int index = node.Text.IndexOf(@"\nbc(");
+            int[] values = new int[3];
+            bool[] parse = new bool[3];
+            int i = 0;
+            string tmpExtra = "";
+
+            if (index != -1)
+            {
+                if (node.Text.IndexOf(@")\") != -1)
+                {
+                    tmpExtra = node.Text.Remove(0, node.Text.IndexOf(@")\") + 1);
+                    node.Text = node.Text.Remove(node.Text.IndexOf(@")\") + 1);
+                }
+                string[] stringVals = node.Text.Remove(0, index + 5).Replace(")", "").Replace(" ", "").Split(',');
+
+                foreach (string val in stringVals)
+                {
+                    parse[i] = int.TryParse(val, out values[i]);
+                    i++;
+                    if (i == 3) { break; }//force the system to only ever read 3 values
+
+                }
+
+                node.BackColor = Color.FromArgb(values[0], values[1], values[2]);//assign the background colour of the node to the alpha,red,green,blue values
+
+                int endIndex = node.Text.IndexOf(values[2] + ")") + values[2].ToString().Length - index + 1;
+                node.Text = node.Text.Remove(index, endIndex) + tmpExtra;//set the nodes' text to not include the delemeter and its parameters
+
+                if (possition > 0)
+                {
+                    if (!parse[0] || !parse[1] || !parse[2])
+                    {//if any did not parse
+                        MessageBox.Show(@"The update logger system saw a colour (\nbc) delemeter at line "
+                        + possition + " but could not find all the values associated with it, the missing values"
+                        + " have been set to 0." + "\r\nCan see red value? " + parse[0] + " "
+                        + stringVals[0] + "\r\nCan see green value? " + parse[1] + " " + stringVals[1]
+                        + "\r\nCan see blue value? " + parse[2] + " " + stringVals[2]
+                        , "Invalid colour set in colour delemeter", MessageBoxButtons.OK
+                        , MessageBoxIcon.Information);
+
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Colours the targeted secondary nodes according to the parameters of a \c delemeter in the nodes name
+        /// </summary>
+        /// <param name="nodes">The nodes to affect</param>
+        /// <param name="possition">An optional parameter which points to the current line the string of data comes from, excluding this disables warnings</param>
+        private void ColourNodes(TreeNode[] nodes, uint possition = 0) {
+            int index = 0;
+            int[] values = new int[3];
+            bool[] parse = new bool[3];
+            string tmpExtra = "";
+
+            foreach (TreeNode node in nodes)
+            {
+                int i = 0;
+                index = node.Text.IndexOf(@"\nbc(");
+                if (index != -1)
+                {//if index == -1, then there is no \c delemeter found
+                    if (node.Text.IndexOf(@")\") != -1) {//if the node has extra delemeters after this delemeter
+                        tmpExtra = node.Text.Remove(0, node.Text.IndexOf(@")\")+1);//store the other delemters and text that are after this delemeter
+                        node.Text = node.Text.Remove(node.Text.IndexOf(@")\")+1);//temporarily remove it all (except the closing bracket)
+
+                    }
+                    string[] stringVals = node.Text.Remove(0, index + 5).Replace(")", "").Replace(" ", "").Split(',');
+
+                    foreach (string val in node.Text.Remove(0, index + 5).Replace(")", "").Replace(" ", "").Split(','))
+                    {
+                        parse[i] = int.TryParse(val, out values[i]);
+                        i++;
+                        if (i == 3) { break; }//force the system to only ever read 3 values
+
+                    }
+
+                    node.BackColor = Color.FromArgb(values[0], values[1], values[2]);//assign the background colour of the node to the alpha,red,green,blue values
+
+                    int endIndex = node.Text.IndexOf(values[2] + ")") + values[2].ToString().Length - index + 1;
+                    node.Text = node.Text.Remove(index, endIndex) + tmpExtra;//set the nodes' text to not include the delemeter and its parameters
+
+                    if (possition > 0 && index != -1)
+                    {
+                        if (!parse[0] || !parse[1] || !parse[2])
+                        {//if any did not parse
+                            MessageBox.Show(@"The update logger system saw a colour (\nbc) delemeter at line "
+                                + possition + " but could not find all the values associated with it, the missing values"
+                                + " have been set to 0." + "\r\nCan see red value? " + parse[0] + " "
+                                + stringVals[0] + "\r\nCan see green value? " + parse[1] + " " + stringVals[1]
+                                + "\r\nCan see blue value? " + parse[2] + " " + stringVals[2]
+                                , "Invalid colour set in colour delemeter", MessageBoxButtons.OK
+                                , MessageBoxIcon.Information);
+
+                        }
+                    }
+                }
+            }
+
+        }
+
     }                                                                                                                       
 }
 //need to comment this
 
     //todo:
     //add a \l delemeter for adding http links e.g. 'whateverthehell...go to here\lwww.w3schools.com\l for stuff'
-    //add a \c delemeter for changing the text colour e.g. '\c#000000you cant see me\c' or just '\c#######' anywhere to affect the entire line with the hex colour code
 

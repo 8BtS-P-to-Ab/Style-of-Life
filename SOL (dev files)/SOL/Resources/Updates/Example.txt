@@ -1,19 +1,22 @@
 ﻿This is a comment, it won't be read by the update logger!
+\tc(0, 0, 255), set the colour of the titles
 
 This is an example of the update logging system\s
-With this logging updates for programms is super easy and a little flashy too!\i
-Like\i
-look\i
-at\i
-!!!!\i
-!!!!\i
-IT JUST DOESN'T STOP\i
-ok it does but this could go on forever.
+\bc(230, 230, 253), set the background colour
+//
+With this logging updates for programms is super easy and a little flashy too!\i\ntc(100, 100, 0)
+Like\i\ntc(0, 100, 0)
+look\i\ntc(100, 0, 0)
+at\i\nbc(210,210,210)\ntc(0, 100, 100)
+!!!!\i\ntc(150, 150, 0)
+!!!!\i\ntc(0, 150, 0)
+IT JUST DOESN'T STOP\i\ntc(150, 0, 0)
+ok it does but this could go on forever.\ntc(0, 150, 150)
 16							\e
 15						\e
 14					\e
 13				\e
-				this!
+				this!\nbc(210,210,210)\ntc(150, 0, 150)//links to "at" @L9
 12			\e
 11		\e
 10	\e
@@ -21,28 +24,33 @@ ok it does but this could go on forever.
 If you're a developer, make sure you read the "programming logs" text file!\i
 It's full of usefull information like:\i
 How my commenting system works. (gotta admit, it's sexy AF)
-More information on how to use this here (fancy pance) updates logging system.
+More information on how to use this here (fancy pance) updates\nbc(210,210,210)
+logging system.\nbc(210,210,210)
 Logic testing. (yay?)
 Algorithm testing. (oooh)
 28		\e
 
-//use this to add comment, in line commenting is not supported.
-Feel free to use any of my code here, its all licensed under a GNU licence       
-(look at the about pages in the help tabs) so you can even use it
-commercially but make sure you reference!
+//use this to add comment, in line commenting is supported
+Feel free to use any of my code here, its all licensed under a GNU licence\nbc(210 ,210 ,210)//for example this wont be read
+(look at the about pages in the help tabs) so you can even use it\nbc(210,210,210)
+commercially but make sure you reference!\nbc(210,210,210)
 
-While my code may be open source, others who provide their own
-programs may only have it there for educational puporses or otherwise just
-avalible without the code being avalible to view or use e.c.t. Make sure
-you always check the programs about page, if it doesn't have one then
-consider it soley closed source unless clearly specified by the creator
-otherwise.
+While my code may be open source, others who provide their own\nbc(210,210,210)
+programs may only have it there for educational puporses or otherwise just\nbc(210,210,210)
+avalible without the code being avalible to view or use e.c.t. Make sure\nbc(210,210,210)
+you always check the programs about page, if it doesn't have one then\nbc(210,210,210)
+consider it soley closed source unless clearly specified by the creator\nbc(210,210,210)
+otherwise.\nbc(210,210,210)
 27	\e
 9\e
 
 //dont make titles longer than this one
 Additions to additions will be shown in that additions own 'updates' window if it has one\s
+\bc(253, 230, 230), set the background colour
+//
 Otherwise this window will be quickly filled and make it hard to find what goes to what.\i
 and it wouldn't look good anyway. and be clunky to use otherwise.
 4	\e
 3\e
+
+note that branches cant contain any: "-", "/"

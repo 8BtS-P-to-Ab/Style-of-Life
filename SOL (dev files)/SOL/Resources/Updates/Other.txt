@@ -1,20 +1,20 @@
 ﻿Planned Features (sorted by upcoming)\s
 
 General\i
+May need to set the about pages' banners programatically as they may (potentially) be staticly definded
 May be a good idea to move the 'updates' window to a seperate program which accepts '-paramater' type peramaters when starting it\i
 Accepted paramater should be path location to updates files
 \e
-May need to set the about pages' banners programatically as they may (potentially) be staticly definded
 \e
 
 SOL\i
-Find a way to only download a branches .zip file so that the useless '.git' folder isn't coppied too
-Overhaul update logging system to work with the additions update
 Add ability for SOL to automatically check for updates
+add ability to check integrity of SOL and additions
 Add ability to force SOL to check for updates
 Add ability to force SOL to check for updates of installed additions
 Comments
-Implament word wrap for 'updates' form
+Try again to overlay rich text editors over, or place into, nodes for more editability of text on the developers side (might need to make a custom controll)
+Implament word wrap/warp for 'updates' form
 fix the installer
 3\e
 
@@ -60,7 +60,9 @@ Need more checks for stuff like access violations (file in use) and such.
 40\e
 
 SOL\i
-Downloading an addition will always fail to delete the junk (see item 2 of Planned>SOL)
+Update loggers' colourizer only works for the first main node\i
+the second main node will be coloured but any node within the second will not
+\e
 43\e
 
 Counter\i

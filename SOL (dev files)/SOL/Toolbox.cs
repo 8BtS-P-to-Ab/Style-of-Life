@@ -6,6 +6,8 @@ using System.Linq;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
+using System.Threading;
+using System.Net;
 
 namespace SOL
 {
@@ -29,6 +31,7 @@ namespace SOL
 
         private void Toolbox_Load(object sender, EventArgs e)
         {
+            //gathering working directory...
             if (Environment.CurrentDirectory.Contains(@"\Debug"))
             {//if in debug mode
                 path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location).TrimEnd(@"\bin\Debug".ToCharArray()) + @"\Resources\Additions";
@@ -38,20 +41,104 @@ namespace SOL
                 path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"\Resources\Additions";
             }
 
+            //loading images and icons...
             this.Icon = new Icon(path + @"\..\SOLICO.ico");
             clearTextBtn.BackgroundImage = Image.FromFile(path + @"\..\clear.ico");
             ReloadIBtn.BackgroundImage = Image.FromFile(path + @"\..\refresh.ico");
             ReloadDBtn.BackgroundImage = Image.FromFile(path + @"\..\refresh.ico");
             clearDwnBtn.BackgroundImage = Image.FromFile(path + @"\..\clear.ico");
 
-            if (int.TryParse((Opacity * 100).ToString(), out int s))
+            //setting start opacity...
+                if (int.TryParse((Opacity * 100).ToString(), out int s))
             {
                 sldBrOpacity.Value = s;//set opacity on load
             }
 
-            //search the Resources>Additions folder for installed additions
+            //searching the Resources>Additions folder for installed additions...
             updateInstalledAddLstBx();
 
+            //checking if any additions failed to install & cleanup...
+            string[] names = new string[0];
+            ushort zn = 0;
+            ushort dn = 0;
+            System.Collections.ObjectModel.ReadOnlyCollection<string> adds = Microsoft.VisualBasic.FileIO.FileSystem.GetDirectories(path);
+            System.Collections.ObjectModel.ReadOnlyCollection<string> files = Microsoft.VisualBasic.FileIO.FileSystem.GetFiles(path);
+            System.Collections.Generic.List<string> all = new System.Collections.Generic.List<string>();
+            all = adds.ToList();
+
+            foreach (string file in files)
+            {
+                all.Add(file);
+            }
+
+            foreach (string add in all) {
+                string[] pathSplit = add.Split(Convert.ToChar(92));
+                if (pathSplit[pathSplit.Length - 1] != ".gitplzdontignoreme")
+                {
+                    if (File.Exists(add))
+                    {
+                        File.Delete(add);
+                        zn++;
+                        Array.Resize(ref names, names.Length + 1);
+                        names[names.Length - 1] = pathSplit[pathSplit.Length - 1].Remove(pathSplit[pathSplit.Length - 1].Length - 4, 4);
+
+                    }
+
+                    if (pathSplit[pathSplit.Length - 1].Contains("-"))
+                    {
+                        Directory.Delete(add, true);
+                        dn++;
+
+                        if (names.Length != 0)
+                        {
+                            if (names[names.Length - 1] != pathSplit[pathSplit.Length - 1])
+                            {
+                                Array.Resize(ref names, names.Length + 1);
+                                names[names.Length - 1] = pathSplit[pathSplit.Length - 1].Replace('-', ' ');
+
+                            }
+                        }
+                        else
+                        {
+                            Array.Resize(ref names, names.Length + 1);
+                            names[names.Length - 1] = pathSplit[pathSplit.Length - 1].Replace('-', ' ');
+
+                        }
+
+                    }
+                }
+
+            }
+
+            if (names.Length == 1)
+            {
+                MessageBox.Show("One addition; " + names[0] + ", did not complete their" +
+                    " installation process, as such it was removed and must be re-downloaded.");
+            }
+            else if (names.Length > 0) {
+                string text = "Multiple additions; ";
+
+                //place each additions' name in the message
+                foreach (string name in names) {
+                    if (name != names[names.Length - 2])
+                    {//if not at the end
+                        text += name + ", ";
+                    }
+                    else {
+                        text += name + " and ";
+                    }
+
+                }
+
+                MessageBox.Show(text + "did not complete their installation processes, as " +
+                    "such they where removed and must be re-downloaded.");
+
+                //re-searching the Resources>Additions folder for installed additions...
+                updateInstalledAddLstBx();
+
+            }
+
+            //getting Y location of the "manage additions" button for animation...
             org = AddBtn.Location.Y;
 
         }
@@ -77,7 +164,7 @@ namespace SOL
         private void updatesBtn_Click(object sender, EventArgs e)
         {
             Updates form = new Updates();
-            Form isOpen = Application.OpenForms["Mass Renamer"];        //get if the window is still open
+            Form isOpen = Application.OpenForms["Updates"];        //get if the window is still open
                                                                         //
             if (isOpen != null) { isOpen.Close(); }                     //if it is then close it
                                                                         //
@@ -156,83 +243,141 @@ namespace SOL
 
         private void DownloadBtn_Click(object sender, EventArgs e)
         {
-            while (true)
+            if (!Directory.Exists(path + @"\" + enumT.Current.ToString().Replace('-', ' ')))
             {
-                try
+                DialogResult response = DialogResult.Cancel;
+                while (true)
                 {
-                    //https://github.com/shadow999999/Style-of-Life/archive/Mass-renamer.zip
-                    string clonedRepoPath = Repository.Clone("https://github.com/shadow999999/Style-of-Life"
-                        , path + @"\" + enumT.Current.ToString().Replace('-', ' '), new CloneOptions { BranchName = enumT.Current.ToString() });
-
-                    //temporary and always throws exception, will remove once i figure out how to download a git repo's .zip file (i.e. not also the .git file)
-                    if (Directory.Exists(path + @"\" + enumT.Current.ToString() + @"\.git"))
+                    try
                     {
-                        try
-                        {
-                            Directory.Delete(path + @"\" + enumT.Current.ToString() + @"\.git", true);
-                        }
-                        catch (Exception exc)
-                        {
-                            MessageBox.Show("An error occured while trying to delete useless junk: " + exc.Message, "Error code: " + exc.HResult);
-                        }
-                    }
-                    //
-
-                    break;
-                }
-                catch (LibGit2Sharp.LibGit2SharpException libGit2SharpException)
-                {
-                    if (libGit2SharpException.Message == "this remote has never connected")
-                    {
-                        DialogResult response = MessageBox.Show("An error occured, the file may not have downloaded and is likely corrupt, the file will be deleted." +
-                            "Cuase: github may be down or you have no internet!", "Connectivity error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Exclamation);
-                        if (response == DialogResult.Retry)
-                        {
-                            if (Directory.Exists(path + @"\" + enumT.Current.ToString()))
+                        if (!File.Exists(path + @"\" + enumT.Current.ToString() + ".zip"))
+                        {//if the .zip file doesn't already exist
+                            using (var client = new WebClient())
                             {
-                                Directory.Delete(path + @"\" + enumT.Current.ToString(), true);
+                                client.Headers.Add("user-agent", "Anything");
+                                client.DownloadFile(
+                                    "https://github.com/shadow999999/Style-of-Life/archive/" + enumT.Current.ToString() + ".zip",
+                                    path + @"\" + enumT.Current.ToString() + ".zip");//download the zip version of the repository, branch
+                            }
+                        }
+                        else {
+                            response = MessageBox.Show("The zip file for this addition already exists, the installtion process may have been pre-emptively " +
+                                "stopped before the process could fail gracefully. This file is likely corrupt, would you like to redownload?",
+                                "Program may have stopped pre-emptively", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                            if (response == DialogResult.Yes)
+                            {
+                                //delete the files
+                                if (Directory.Exists(path + @"\Style-of-Life-" + enumT.Current.ToString()))
+                                {
+                                    Directory.Delete(path + @"\Style-of-Life-" + enumT.Current.ToString(), true);
+                                }
+
+                                if (Directory.Exists(path + @"\" + enumT.Current.ToString().Replace('-', ' ')))
+                                {
+                                    Directory.Delete(path + @"\" + enumT.Current.ToString().Replace('-', ' '), true);
+                                }
+
+                            }
+                        }
+
+                        //ensure the file is not currently in use (being scanned by an AV)
+                        FileInfo fileI = new FileInfo(path + @"\" + enumT.Current.ToString() + ".zip");
+                        ErrorLogger threadCheck = new ErrorLogger();
+                        response = DialogResult.OK;
+
+                        while (true)
+                        {
+                            int breakOut = 10;
+                            while (threadCheck.IsFileLocked(fileI) && breakOut != 0)
+                            {//if the thread is locked
+                                Thread.Sleep(1000);//wait for any AV programs to finish "licking" the new file
+                                breakOut--;//force the while loop to end after 10 seconds (10 loops)
+                            }
+
+                            if (breakOut == 0)
+                            {
+                                response = MessageBox.Show("Can not continue with installtion; the zip file is currently in use",
+                                "File locked", MessageBoxButtons.RetryCancel, MessageBoxIcon.Exclamation);
+                                if (response == DialogResult.Cancel) {
+                                    break;
+                                }
+                            }
+
+                            if (!threadCheck.IsFileLocked(fileI)) {
+                                break;//if file is no longer locked
                             }
 
                         }
-                        else
-                        {
-                            if (Directory.Exists(path + @"\" + enumT.Current.ToString()))
-                            {
-                                Directory.Delete(path + @"\" + enumT.Current.ToString(), true);
-                                break;
-                            }
 
+                        if (response == DialogResult.Cancel)
+                        {
+                            break;
                         }
 
-                    }
-                    else if (libGit2SharpException.HResult == -2146233088)
-                    {
-                        MessageBox.Show("You already have this installed.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        response = DialogResult.No;
+                        if (!Directory.Exists(path + @"\Style-of-Life-" + enumT.Current.ToString()))
+                        {//if the uncompressed files are not already present
+                            System.IO.Compression.ZipFile.ExtractToDirectory(path + @"\" + enumT.Current.ToString() + ".zip", path + @"\");//unpack the zip file, note: you can use ZipFile.CreateFromDirectory to create zip files
+                        }
+                        else {
+                            response = MessageBox.Show("A directory for this addition already exists, the installtion process may have been pre-emptively " +
+                                "stopped before the process could fail gracefully. The install is likely corrupt, would you like to redownload?",
+                                "Program may have stopped pre-emptively", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                            if (response == DialogResult.Yes) {
+                                //delete the files
+                                if (Directory.Exists(path + @"\Style-of-Life-" + enumT.Current.ToString()))
+                                {
+                                    Directory.Delete(path + @"\Style-of-Life-" + enumT.Current.ToString(), true);
+                                }
+
+                                if (Directory.Exists(path + @"\" + enumT.Current.ToString().Replace('-', ' ')))
+                                {
+                                    Directory.Delete(path + @"\" + enumT.Current.ToString().Replace('-', ' '), true);
+                                }
+
+                            }
+                        }
+
+                        if (response == DialogResult.No)
+                        {
+                            Directory.Move(path + @"\Style-of-Life-" + enumT.Current.ToString(), path + @"\" + enumT.Current.ToString().Replace('-', ' '));//rename the folder to its correct name
+                        }
+
+                        if (File.Exists(path + @"\" + enumT.Current.ToString() + ".zip")) {
+                            File.Delete(path + @"\" + enumT.Current.ToString() + ".zip");                        //delete the .zip file
+                        }
+
                         break;
                     }
-                    else
+                    catch (Exception exception)
                     {
-                        DialogResult response = MessageBox.Show("An unknown error occured whilst trying to retreive data from github: " + libGit2SharpException.Message,
-                            "Error code: " + libGit2SharpException.HResult, MessageBoxButtons.RetryCancel, MessageBoxIcon.Exclamation);
-                        if (response == DialogResult.Retry)
-                        {
-                            if (Directory.Exists(path + enumT.Current.ToString()))
-                            {
-                                Directory.Delete(path + enumT.Current.ToString(), true);
-                            }
+                            MessageBox.Show("An error occured whilst trying to add a new addition and will be aborted, reason: " + exception.Message,
+                            "Error code: " + exception.HResult, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 
+                        if (File.Exists(path + @"\" + enumT.Current.ToString() + ".zip"))
+                        {//if the zip file still exists
+                            File.Delete(path + @"\" + enumT.Current.ToString() + ".zip");//delete the .zip file as it may not have downloaded correctly (causing cascading error)
                         }
-                        else
-                        {
-                            if (Directory.Exists(path + enumT.Current.ToString()))
-                            {
-                                Directory.Delete(path + @"\" + enumT.Current.ToString(), true);
-                                break;
-                            }
 
+                        if (Directory.Exists(path + @"\Style-of-Life-" + enumT.Current.ToString()))
+                        {//if the file managed to extract the folders
+                            Directory.Delete(path + @"\Style-of-Life-" + enumT.Current.ToString(), true);//delete the folder as an error may have occred while extracting that was not caught (causing cascading error)
                         }
-                    }
+
+                        if (Directory.Exists(path + @"\" + enumT.Current.ToString().Replace('-', ' ')))
+                        {//if the file managed to managed to rename
+                            Directory.Delete(path + @"\" + enumT.Current.ToString().Replace('-', ' '), true);//delete the folder as an error occred while moving the folder contents to the renamed folder
+                        }
+
+                     }
+
                 }
+
+            }
+            else {
+                MessageBox.Show("You already have this installed.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
             updateInstalledAddLstBx();

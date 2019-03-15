@@ -51,10 +51,11 @@
             // treeViewAll
             // 
             this.treeViewAll.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.treeViewAll.FullRowSelect = true;
             this.treeViewAll.Location = new System.Drawing.Point(2, 113);
             this.treeViewAll.Name = "treeViewAll";
             this.treeViewAll.ShowLines = false;
-            this.treeViewAll.Size = new System.Drawing.Size(418, 14);
+            this.treeViewAll.Size = new System.Drawing.Size(418, 39);
             this.treeViewAll.TabIndex = 2;
             // 
             // tabControler
