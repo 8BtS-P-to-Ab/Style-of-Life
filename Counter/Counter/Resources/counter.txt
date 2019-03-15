@@ -1,0 +1,11 @@
+1.0.0.3\s
+Fixed an issue with pathing not being updated to handle the new layout and additions system\i
+Fixed an issue where the icon would not load as it was searching the wrong directory (was searching statically)
+\e
+Added load-time path checking
+Updated binaries to reflect the correct application & build versions
+\e
+
+1.0.0.1\s
+Updated path references to all use the same variable, slightly faster
+\e
