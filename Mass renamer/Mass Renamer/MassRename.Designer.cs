@@ -31,7 +31,6 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MassRename));
             this.BtnMassRename = new System.Windows.Forms.Button();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.PreferencesTSMI = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,6 +62,9 @@
             this.fileRenameTxtBx = new System.Windows.Forms.TextBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.label5 = new System.Windows.Forms.Label();
+            this.backgroundThread = new System.ComponentModel.BackgroundWorker();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.ThreadProgressBar = new System.Windows.Forms.ProgressBar();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.sldBrOpacity)).BeginInit();
             this.SuspendLayout();
@@ -76,14 +78,6 @@
             this.BtnMassRename.Text = "Mass rename";
             this.BtnMassRename.UseVisualStyleBackColor = true;
             this.BtnMassRename.Click += new System.EventHandler(this.BtnMassRename_Click);
-            // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.AddExtension = false;
-            this.openFileDialog1.AutoUpgradeEnabled = false;
-            this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.InitialDirectory = "C:\\";
-            this.openFileDialog1.Multiselect = true;
             // 
             // toolStrip1
             // 
@@ -330,7 +324,7 @@
             this.sldBrOpacity.Maximum = 100;
             this.sldBrOpacity.Minimum = 10;
             this.sldBrOpacity.Name = "sldBrOpacity";
-            this.sldBrOpacity.Size = new System.Drawing.Size(283, 45);
+            this.sldBrOpacity.Size = new System.Drawing.Size(291, 45);
             this.sldBrOpacity.TabIndex = 32;
             this.sldBrOpacity.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             this.sldBrOpacity.Value = 100;
@@ -387,11 +381,38 @@
             this.label5.TabIndex = 33;
             this.label5.Text = "Opacity";
             // 
+            // backgroundThread
+            // 
+            this.backgroundThread.WorkerReportsProgress = true;
+            this.backgroundThread.WorkerSupportsCancellation = true;
+            this.backgroundThread.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundThread_DoWork);
+            this.backgroundThread.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundThread_RunWorkerCompleted);
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.AddExtension = false;
+            this.openFileDialog1.AutoUpgradeEnabled = false;
+            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.InitialDirectory = "C:\\";
+            this.openFileDialog1.Multiselect = true;
+            // 
+            // ThreadProgressBar
+            // 
+            this.ThreadProgressBar.Location = new System.Drawing.Point(12, 134);
+            this.ThreadProgressBar.Name = "ThreadProgressBar";
+            this.ThreadProgressBar.Size = new System.Drawing.Size(271, 24);
+            this.ThreadProgressBar.Step = 1;
+            this.ThreadProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.ThreadProgressBar.TabIndex = 34;
+            this.ThreadProgressBar.Visible = false;
+            this.ThreadProgressBar.TabIndexChanged += new System.EventHandler(this.ThreadProgressBar_TabIndexChanged);
+            // 
             // MassRename
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(299, 214);
+            this.Controls.Add(this.ThreadProgressBar);
             this.Controls.Add(this.BtnMassRename);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.sldBrOpacity);
@@ -400,10 +421,12 @@
             this.Controls.Add(this.fileRenameTxtBx);
             this.Controls.Add(this.label5);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
             this.Name = "MassRename";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Mass Renamer";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MassRename_FormClosing);
             this.Load += new System.EventHandler(this.MassRename_Load);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
@@ -416,7 +439,6 @@
         #endregion
 
         private System.Windows.Forms.Button BtnMassRename;
-        private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
         private System.Windows.Forms.ToolStripMenuItem PreferencesTSMI;
@@ -448,6 +470,9 @@
         private System.Windows.Forms.TextBox extentionTxtBx;
         private System.Windows.Forms.TextBox fileRenameTxtBx;
         private System.Windows.Forms.Label label5;
+        private System.ComponentModel.BackgroundWorker backgroundThread;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.ProgressBar ThreadProgressBar;
     }
 }
 

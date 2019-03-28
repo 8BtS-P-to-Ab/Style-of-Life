@@ -22,3 +22,18 @@ C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\
 C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.csproj.CoreCompileInputs.cache
 C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.exe
 C:\Users\shado\Desktop\SOL branches (local)\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.pdb
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\bin\Debug\Mass Renamer.exe.config
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\bin\Debug\Mass Renamer.exe
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\bin\Debug\Mass Renamer.pdb
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.csprojAssemblyReference.cache
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\obj\Debug\Mass_Renamer.AboutMR.resources
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\obj\Debug\Mass_Renamer.MassRename.resources
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\obj\Debug\Mass_Renamer.MRGuide.resources
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\obj\Debug\Mass_Renamer.Properties.Resources.resources
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.csproj.GenerateResource.cache
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.csproj.CoreCompileInputs.cache
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.exe
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.pdb
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\obj\Debug\Mass_Renamer.progress.resources
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\bin\Debug\System.Threading.Tasks.Dataflow.dll
+C:\Users\shado\source\repos\SOL\Resources\Additions\Mass renamer\Mass renamer\Mass Renamer\obj\Debug\Mass Renamer.csproj.CopyComplete

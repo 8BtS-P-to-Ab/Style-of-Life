@@ -35,10 +35,17 @@
   <PropertyGroup>
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\SOLICO.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>Mass_Renamer.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -56,6 +63,7 @@
     <Compile Include="AboutMR.Designer.cs">
       <DependentUpon>AboutMR.cs</DependentUpon>
     </Compile>
+    <Compile Include="ErrorLogger.cs" />
     <Compile Include="FolderSelectDialog.cs" />
     <Compile Include="MassRename.cs">
       <SubType>Form</SubType>
@@ -70,6 +78,12 @@
       <DependentUpon>MRGuide.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="progress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="progress.Designer.cs">
+      <DependentUpon>progress.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflector.cs" />
     <Compile Include="Splitter.cs" />
@@ -81,6 +95,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MRGuide.resx">
       <DependentUpon>MRGuide.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="progress.resx">
+      <DependentUpon>progress.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -109,7 +126,6 @@
   <ItemGroup>
     <Content Include="Resources\PROJECT SOL logo.png" />
     <Content Include="Resources\SOLICO.ico" />
-    <Content Include="Resources\Updates\Mass Renamer.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

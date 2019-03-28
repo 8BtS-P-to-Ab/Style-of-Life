@@ -1,4 +1,30 @@
-﻿1.0.2.6\s
+﻿need to add "text prior"
+1.1.3.2\s
+Fixed a crash when trying to rename a file when the name to rename to already\nbc(210, 210, 210)				//bugfix (minor)
+exists as a file (e.g. file1 trying to rename to '1', but the file '1' already exists).\nbc(210, 210, 210)
+Added progress bars																								//small content (minor)
+Added multi-threading\nbc(210, 210, 210)\i																		//Large content (primary)
+Note: Single core computers are no longer supported (although I can't
+imagine why someone with *that* would be using a program like this).
+\nbc(210, 210, 210)
+\e
+Fixed alternate root for randomisation to actually randomise.													//bugfix (minor)
+Re-added and updated the error logger\nbc(210, 210, 210)\i
+Added: Error logger can now queue messages to send to a file in a
+multi-processor freindly manner.
+Added: Error logger now auto tabs queued messages at a tab ratio of 4 (use\nbc(210, 210, 210)
+VS or notepad++ to read em).\nbc(210, 210, 210)
+Added many ways to interact with the message queue.
+\nbc(210, 210, 210)
+\e
+Added: The program will now force a crashout during the renaming process if										//small failsafe (minor)
+something goes wrong to prevent any potential "damage".
+Added: The program will now gracefully fail before the renaming process if\nbc(210, 210, 210)					//failsafe (minor)
+something goes wrong.\nbc(210, 210, 210)
+Added input sanitisation																						//small content (minor)
+\e
+
+1.0.2.6\s
 Fixed an issue where the icon would not load as it was searching the wrong directory (was searching statically)
 Updated binaries to reflect the correct application & build versions
 \e

@@ -224,7 +224,7 @@ namespace Mass_Renamer
         }
 
         /// <summary>
-        /// Checks if the character is at (==), before, after (>) at the index to check.
+        /// Checks if the character is at (==), before, after (>) the index to check.
         /// </summary>
         /// <param name="aChar"></param>
         /// <param name="word"></param>
@@ -504,8 +504,9 @@ namespace Mass_Renamer
         /// </summary>
         /// <param name="state">The type of counting to be used.</param>
         /// <param name="limit">The how large the resultant enumerable will be. States 0 and 1 require soley int based characters.</param>
+        /// <param name="startPoint">Where the resultant will start at, state 0 has default of "0", state 1 & 3 has default of "1".</param>
         /// <returns></returns>
-        public static IEnumerable<string> GetAdditionType(ushort state, string limit)
+        public static IEnumerable<string> GetAdditionType(ushort state, string limit, int startPoint)
         {
             //the 'limit' variable should remain a string for the sake of modability with the custom set state.
 
@@ -519,11 +520,11 @@ namespace Mass_Renamer
             {                                                                               //Tif working with an alphabet addition type
                                                                                             //|
                 ushort[] LA = new ushort[1];                                                //|--initialize an array to hold the lettering code
-                LA[0] = 1;                                                                  //|--set first letter to non-errornous code
+                LA[0] = (ushort)startPoint;                                                                  //|--set first letter to non-errornous code
                 int.TryParse(limit, out int locLim);                                        //|--get the limit as an int
                 string conc = "";                                                           //|--initialize a string to hold the resultant code
                                                                                             //|
-                for (int c = 0; c < locLim; c++)                                            //|-Tloop untill the specified limit is reached
+                for (int c = startPoint; c < locLim; c++)                                            //|-Tloop untill the specified limit is reached
                 {                                                                           //|-|----for the first 26 loops, only single letters are returned (A-Z)
                     for (int ovi = 1; ovi <= LA.Length; ovi++)                              //|-|----meaning this for loop (ovi) is ignored for 26 of the above loop's loops
                     {                                                                       //|-|---Tloop for the amount of columns (letters) are currently in use
@@ -536,7 +537,7 @@ namespace Mass_Renamer
                         }                                                                   //|-|   |   |e)
                     }                                                                       //|-|   |L)
                                                                                             //|-|  
-                                                                                            //returns                                                               //|-|----start returning the results
+                    //returns                                                               //|-|----start returning the results
                     for (int ovi = LA.Length; ovi > 0; ovi--)                               //|-|  
                     {                                                                       //|-|---Tdeiterative loop from the amount of letters currently in use down to the first letter
                         conc += char.ConvertFromUtf32((LA[0 + (ovi - 1)] - 1) + 65);        //|-|---|----add all the letters to the final resultant string
@@ -552,7 +553,7 @@ namespace Mass_Renamer
             {                                                        //\c)if working with a alphanumeric addition type
                 int.TryParse(limit, out int l);                                             //|--get the limit as an int
                                                                                             //|
-                for (int i = 1; i <= l; i++)                                                //|
+                for (int i = startPoint; i <= l; i++)                                       //|
                 {                                                                           //|-Tloop for until the input limit is reached
                     yield return i.ToString();                                              //|-|----simply return the loop number
                 }                                                                           //|-|L)
@@ -567,7 +568,7 @@ namespace Mass_Renamer
             {                                                        //\cif additon type must return nothing (disabled)
                 int.TryParse(limit, out int l);                                             //|--get the limit as an int
                                                                                             //|
-                for (int i = 1; i <= l; i++)                                                //|
+                for (int i = startPoint; i <= l; i++)                                                //|
                 {                                                                           //|-Tloop for until the input limit is reached
                     yield return "";                                                        //|-|----return nothing
                 }                                                                           //|-|L)
