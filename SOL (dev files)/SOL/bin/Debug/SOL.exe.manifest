@@ -194,13 +194,13 @@
       <dsig:DigestValue>MAQmZ11NCAE9Beq4Af02skkVK/RKyKh2pQkP74tW4HY=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="Resources\Updates\Other.txt" size="2295">
+  <file name="Resources\Updates\Other.txt" size="1986">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>YPz0Jf7OLjmXT7kItOodk8VnFE0bRlDZ/It9LPjBG8s=</dsig:DigestValue>
+      <dsig:DigestValue>PThzTE1IPF9my47Pg63OVkGyrTEbprj2pwk4STs2uaM=</dsig:DigestValue>
     </hash>
   </file>
   <file name="Resources\Updates\SOL.txt" size="3425">

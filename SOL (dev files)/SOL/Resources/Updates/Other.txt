@@ -12,6 +12,7 @@ Add ability for SOL to automatically check for updates
 add ability to check integrity of SOL and additions
 Add ability to force SOL to check for updates
 Add ability to force SOL to check for updates of installed additions
+Fully implament propper logging system
 Comments
 Try again to overlay rich text editors over, or place into, nodes for more editability of text on the developers side (might need to make a custom controll)
 Implament word wrap/warp for 'updates' form
@@ -35,12 +36,8 @@ Fix the about page
 
 Mass renamer:\i
 Add additions support
-Progress bar
 Mass folder renaming
 add an ability to remove x characters from every file (mostly for stripping existing extentions), which is already done by the extention box anyway.
-path sanitisation\i
-disallowing stuff like '/' '\n' e.c.t. to be typed in the textbox [use regex, probably one already exists] and only allow selection of 'verified' files (see openFileDialog1 options)
-25		\e
 More numbering & selection options\i
 the ability to change numbering style from 1,2,3,4,20,100 to 001,002,003,004,020,100
 hexadecimal numbering
@@ -48,7 +45,6 @@ the ability to adjust the starting point of the number/letter/custom collection 
 regular expression type selection
 28		\e
 undo
-multithreading
 20	\e
 1\e
 

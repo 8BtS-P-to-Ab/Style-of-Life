@@ -1,30 +1,30 @@
 ﻿1.1.4.7\s
 \bc(224, 224, 224), set the background colour
-SOL now downloads an additions .zip file instead of cloning the entire\nbc(210,210,210)			//bugfix
+SOL now downloads an additions .zip file instead of cloning the entire\nbc(210,210,210)			//bugfix (minor update)
 repositories branch.\nbc(210,210,210)															
-SOL now fails more gracefully if a download/install fails.										//bugfix
+SOL now fails more gracefully if a download/install fails.										//bugfix (minor update)
 SOL will now handle resolving pre-emptive program shutdowns which\nbc(210,210,210)
-happen during the download/install process.\i\nbc(210,210,210)									//small content										
-SOL will warn the user of all additions that failed to complete their install					//small content
+happen during the download/install process.\i\nbc(210,210,210)									//small content (minor update)
+SOL will warn the user of all additions that failed to complete their install					//small content (minor update)
 process, informing the user that the afflicted additions where deleted
 and need re-downloading.																			
 \nbc(210,210,210)																				
 6	\e																							
-'Updates' window now supports multiple new colour delemeters so it no							//small content
+'Updates' window now supports multiple new colour delemeters so it no							//small content (minor update)
 longer looks so bland\i																			
-'Updates' window now supports a colour ((@\nbc)) delemeter with 3\nbc(210,210,210)				//small content
+'Updates' window now supports a colour ((@\nbc)) delemeter with 3\nbc(210,210,210)				//small content (minor update)
 paramaters defining the RGB based colour of the node's background the\nbc(210,210,210)
 delemeter is placed on.\nbc(210,210,210)																		
-'Updates' window now supports a title colour ((@\tc)) delemeter with 3							//small content
+'Updates' window now supports a title colour ((@\tc)) delemeter with 3							//small content (minor update)
 paramaters defining the RGB based colour of the node's background the
 delemeter is placed on.																			
 'Updates' window now supports a background colour ((@\bc)) delemeter\nbc(210,210,210)
-with 3 paramaters defining the RGB based colour of the node viewers list\nbc(210,210,210)		//small content
+with 3 paramaters defining the RGB based colour of the node viewers list\nbc(210,210,210)		//small content (minor update)
 boxes' background the delemeter is placed on.\nbc(210,210,210)											
 																								
 \e																								
-'Updates' window now supports in line commenting.\nbc(210,210,210)								//small content
-'Updates' window now supports litterals e.g. @\i can now be written & read!						//small content
+'Updates' window now supports in line commenting.\nbc(210,210,210)								//small content (minor update)
+'Updates' window now supports litterals e.g. @\i can now be written & read!						//small content (minor update)
 1\e
 
 1.1.3.8\s
