@@ -36,16 +36,17 @@ namespace Mass_Renamer
         int processorCount = Environment.ProcessorCount -1;//get amount of processors - 1 as one thread is already being used by the UI & Main processes
         bool DW = false;//stores weather or not the warnings have been disabled
         bool active = false;//stores if the program is currently mass renaming or not
-        public static int i = 0;
         int split = 0;//stores the amount of files delegated to each thread
         string[] threadProgress = new string[0];//used for debugging to check if all of the threads have renamed correctly
-        bool msg = false;//supposed to suppress duplicate error messages from appearing for the user (needs work)
+        bool msg = false;//suppresses duplicate error messages from appearing for the user
         string selectedPath = "";//stores what the selected path currently is based on the user input direction
-        int[] ThreadClaimed = new int[0];//stores which thread (the ThreadClaimed[#] object) claimed what file (#)
         //string[] refAll = new string[0];//stores the entire list of all the delegated files (unused, might use for undo)
         string[] renamedFrom = new string[0];//stores the original name of a file. Used for handling rename conflicts and undo
         string[] renamedTo = new string[0];//stores the name the file was renamed to.
         int tmpc = 1;//stores which TMPRN file we're at
+
+        int[] ThreadClaimed = new int[0];//stores which thread (the ThreadClaimed[#] object) claimed what file (#) [currently only used for debugging, will be used for better delegtion]
+        string[][] delegated = new string[0][];//stores the delegated files (currently unused, will be used for better delegation)
 
         //lockers (e.g. for use with Monitor.Enter())
         private static object locker = new object();//a generic object to 'bottle neck' the threads for handling cross delegation problems
@@ -61,7 +62,9 @@ namespace Mass_Renamer
 
         private void MassRename_Load(object sender, EventArgs e)
         {
-            if (processorCount == 0) {
+            //check if the users system is a single core system
+            if (processorCount == 0)
+            {
                 MessageBox.Show("This program does not support single core computers. Please use version 1.0.2.5 or earlier.");
                 Close();
 
@@ -69,90 +72,52 @@ namespace Mass_Renamer
 
             //get the path to work in
             if (Environment.CurrentDirectory.Contains(@"\Debug"))
-            {//if in debug mode
-                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location).TrimEnd(@"\bin\Debug".ToCharArray()) + @"\Resources";
+            {                                                                                               //T if in debug mode
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly                           //|-- get folder location of the launched executable and its resources folder
+                    .GetEntryAssembly().Location).TrimEnd(@"\bin\Debug".ToCharArray()) + @"\Resources";     //|
+                                                                                                            //|
+                if (!File.Exists(path + @"\log.txt"))                                                       //|
+                {                                                                                           //|-T check if the logging file doesnt already exists
+                    File.CreateText(path + @"\log.txt").Close();                                            //|-|--- Create the logging file
+                                                                                                            //| |
+                } else {                                                                                    //|-\c) otherwise if it already exists
+                    errorLogger.QueueLog("", "", 4, true);                                                  //|-|--- Append an empty space to seperate the previous log from this ones
+                                                                                                            //| |
+                }                                                                                           //|-|e)
+                                                                                                            //|
+                if (path.Contains("SOL"))                                                                   //|
+                {                                                                                           //|-T Check if the current working directory contains "SOL" (check if launched from SOL)
+                    errorLogger.QueueLog("INFO: Running in debug mode in SOL.");                            //|-|--- log that the program is running in SOL in debug mode
+                                                                                                            //| |
+                } else {                                                                                    //|-\c) otherwise if not launched from SOL (launched .exe directly)
+                    errorLogger.QueueLog("INFO: Running in debug mode.");                                   //|-|--- log that the program is running in direct debug mode
+                                                                                                            //| |
+                }                                                                                           //|-|e)
+            } else {                                                                                        //\c) otherwise if in realease mode
+                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly                           //|-- get folder location of the launched executable and its resources folder
+                    .GetEntryAssembly().Location) + @"\Resources";                                          //|
+                                                                                                            //|
+                if (!File.Exists(path + @"\log.txt"))                                                       //|
+                {                                                                                           //|-T check if the logging file doesnt already exists
+                    File.CreateText(path + @"\log.txt").Close();                                            //|-|--- Create the logging file
+                                                                                                            //| |
+                } else {                                                                                    //|-\c) otherwise if it already exists
+                    errorLogger.QueueLog("", "", 4, true);                                                  //|-|--- Append an empty space to seperate the previous log from this ones
+                                                                                                            //| |
+                }                                                                                           //|-|e)
+                                                                                                            //|
+                if (path.Contains("SOL"))                                                                   //|
+                {                                                                                           //|-T Check if the current working directory contains "SOL" (check if launched from SOL)
+                    errorLogger.QueueLog("INFO: Running in release mode in SOL.");                          //|-|--- Log that the program is running in SOL in release mode 
+                                                                                                            //| |
+                } else {                                                                                    //|-\c) otherwise if not launched from SOL (launched .exe directly)
+                    errorLogger.QueueLog("INFO: Running in release mode.");                                 //|-|--- log that the program is running in direct release mode
+                                                                                                            //| |
+                }                                                                                           //| |e)
+            }                                                                                               //|e)
 
-                if (!File.Exists(path + @"\log.txt"))
-                {
-                    File.CreateText(path + @"\log.txt").Close();
-
-                }
-                else {
-                    errorLogger.QueueLog("", "", 4, true);
-
-                }
-
-                if (path.Contains("SOL"))
-                {
-                    errorLogger.QueueLog("INFO: Running in debug mode in SOL.");
-
-                }
-                else {
-                    errorLogger.QueueLog("INFO: Running in debug mode.");
-
-                }
-            }
-            else
-            {
-                path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) + @"\Resources";
-
-                if (!File.Exists(path + @"\log.txt"))
-                {
-                    File.CreateText(path + @"\log.txt").Close();
-
-                }
-                else {
-                    errorLogger.QueueLog("", "", 4, true);
-
-                }
-
-                if (path.Contains("SOL"))
-                {
-                    errorLogger.QueueLog("INFO: Running in debug mode in SOL.");
-
-                }
-                else
-                {
-                    errorLogger.QueueLog("INFO: Running in debug mode.");
-
-                }
-            }
-
+            //set resources
             this.Icon = new Icon(path + @"\SOLICO.ico");
-
-            //only use this for debugging the queueLog() function
-            //if (!File.Exists(path + @"\test.txt"))
-            //    {
-            //        File.Create(path + @"\test.txt").Close();
-            //    }
-            //ErrorLogger TestErrorLogger = new ErrorLogger();
-            //TestErrorLogger.QueueLog("", "", 4, true);
-            //TestErrorLogger.QueueLog("test");
-            //TestErrorLogger.QueueLog("test2", "", 4, false, 145, "BtnMassRename_Click");
-            //TestErrorLogger.QueueLog("test3", "", 4, false, 123456789, "backgroundThread_RunWorkerCompleted");
-            //TestErrorLogger.QueueLog("test4", "", 4, false, 123456789, "backgroundThread_RunWorkerCompleted");
-            //TestErrorLogger.QueueLog("test5", "", 4, false, 123456, "backgroundThread_RunWorkerCompleted");
-
-            //errorLogger.QueueLog("test");
-            //errorLogger.QueueLog("test");
-            //errorLogger.QueueLog("test");
-            //errorLogger.QueueLog("test");
-
-            //bool ttest = TestErrorLogger.AppendQueue(errorLogger.GetQueue());
-
-            ////TestErrorLogger.ForceReTabbing(8);
-
-            ////TestErrorLogger.RemoveItemFromQueue(2);
-
-            ////string[] queueItem = new string[8];
-            ////queueItem.SetValue("MassRename_Load()", 1);
-            ////queueItem.SetValue("", 3);
-            ////ttest = TestErrorLogger.RemoveItemFromQueue(queueItem);
-            ////ttest = TestErrorLogger.RemoveItemFromQueue(queueItem);
-
-            ////TestErrorLogger.RemoveItemFromQueue();
-
-            //TestErrorLogger.ReleaseQueue(path + @"\test.txt");
 
             //failsafe if ref files still exist due to a unexpected fail before ref files could be reset
             foreach (var refFile in Directory.GetFiles(path, "ref*"))
@@ -162,1131 +127,1028 @@ namespace Mass_Renamer
             }
 
             //FolderSelectDialog.cs and Refelector.cs is from http://www.lyquidity.com/devblog/?p=136
-            //allows for the use of vita/win7 folder selector.
+            //Initialize the folder selection dialog. Allows for the use of vita/win7 folder selector.
             fsd = new FolderSelectDialog                                                                                     
-            {                                                                                                                                   //T initialise a new 'folder selection dialog box' object (controller)
-                Title = "Select at leat one folder",                                                                                            //|--- Set the dialog box's title
-                InitialDirectory = @"C:\"                                                                                                       //|--- changes the initial directory opened when the dialog box is opened to the C drive
-            };                                                                                                                                  //|e)
-
-            //Environment.ProcessorCount
-            //System.Threading.Tasks.Dataflow.
-            //https://docs.microsoft.com/en-us/visualstudio/debugger/using-the-tasks-window?view=vs-2017
-            //https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.dataflow?view=netcore-2.2
-            //https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.dataflow.actionblock-1?view=netcore-2.2
+            {                                               //T initialise a new 'folder selection dialog box' object (controller)
+                Title = "Select at leat one folder",        //|--- Set the dialog box's title
+                InitialDirectory = @"C:\"                   //|--- changes the initial directory opened when the dialog box is opened to the C drive
+            };                                              //|e)
 
         }
 
+        //handles prombting the user for input and getting the files to target
         private void BtnMassRename_Click(object sender, EventArgs e)
         {
-            split = 0;
-            ThreadProgressBar.Value = 0;
-            tmpc = 1;
-            Array.Resize(ref renamedFrom, 0);
-            Array.Resize(ref renamedTo, 0);
-
             errorLogger.QueueLog("INFO: Started a new mass rename instance.");
-            active = true;
-            BtnMassRename.Enabled = false;
-            PreferencesTSMI.Enabled = false;
-            StreamWriter[] refa = new StreamWriter[processorCount];
-            reSync = new bool[processorCount];
-            ThreadProgressBar.Refresh();
 
-            //-------------------------------------------------------
-            string text = fileRenameTxtBx.Text;                                                                                                     //get the user inputted text
-            int length = 0;                                                                                                                         //store the amount of files in the folder selected as 'length'
-            if (textAfterNumTxtBx.Text == "Text after number (optional)") { textAfterNumTxtBx.Text = ""; }                                          //if the 'text after number' feild has not been filled; set it to nothing (so that it doesn't affect the process)
-
-            bool valid = true;
-            string[] invalidN = new string[0];
-            string[] invalidA = new string[0];
-            string[] invalidE = new string[0];
-
-            foreach (char invalidC in Path.GetInvalidFileNameChars())
-            {
-                if (text.Contains(invalidC.ToString()))
-                {
-                    valid = false;
-                    Array.Resize(ref invalidN, invalidN.Length + 1);
-                    invalidN[invalidN.Length - 1] = invalidC.ToString();
-                    
-                }
-
-                if (textAfterNumTxtBx.Text.Contains(invalidC.ToString()))
-                {
-                    valid = false;
-                    Array.Resize(ref invalidA, invalidA.Length + 1);
-                    invalidA[invalidA.Length - 1] = invalidC.ToString();
-                    
-                }
-
-                if (("." + extentionTxtBx.Text).Contains(invalidC.ToString()))
-                {
-                    valid = false;
-                    Array.Resize(ref invalidE, invalidE.Length + 1);
-                    invalidE[invalidE.Length - 1] = invalidC.ToString();
-
-                }
-
-            }
-
-            if (textAfterNumTxtBx.Text.Contains(".")) {
-                valid = false;
-                Array.Resize(ref invalidA, invalidA.Length + 1);
-                invalidA[invalidA.Length - 1] = ".";
-
-            }
-
-            if (extentionTxtBx.Text.Contains("."))
-            {
-                valid = false;
-                Array.Resize(ref invalidE, invalidE.Length + 1);
-                invalidE[invalidE.Length - 1] = ".";
-
-            }
-
-            if (!valid)
-            {
-                string errmsg = "Please amend these issues to start the renaming process:\n\n";
-                if (invalidN.Length > 0)
-                {
-                    errmsg += "The name to rename the files to contains at least one illegal character: \"";
-
-                    foreach (string invalidC in invalidN)
-                    {
-                        if (invalidN.Length > 1 && invalidC != invalidN[0] && invalidC != invalidN[invalidN.Length-1]) {//if there is at least 2 invalid characters and we're not on the first invalid character nor the last
-                            errmsg += "\", \"";
-                        }
-
-                        if (invalidN.Length > 1 && invalidC == invalidN[invalidN.Length-1]) {//otherwise if we're on the second last invald character
-                            errmsg += "\" and \"";
-
-                        }
-
-                        errmsg += invalidC;
-                    }
-
-                    errmsg += "\".";
-                    if (invalidA.Length > 0 || invalidE.Length > 0)
-                    {
-                        errmsg += "\n";
-                    }
-
-                }
-
-                if (invalidA.Length > 0)
-                {
-                    errmsg += "The text to include after the counter contains at least one illegal character: \"";
-
-                    foreach (string invalidC in invalidA)
-                    {
-                        if (invalidA.Length > 1 && invalidC != invalidA[0] && invalidC != invalidA[invalidA.Length - 1])
-                        {//if there is at least 2 invalid characters and we're not on the first invalid character nor the last
-                            errmsg += "\", \"";
-                        }
-
-                        if (invalidA.Length > 1 && invalidC == invalidA[invalidA.Length - 1])
-                        {//otherwise if we're on the second last invald character
-                            errmsg += "\" and \"";
-
-                        }
-
-                        errmsg += invalidC;
-                    }
-
-                    errmsg += "\".";
-                    if (invalidE.Length > 0)
-                    {
-                        errmsg += "\n";
-                    }
-
-                }
-
-                if (invalidE.Length > 0)
-                {
-                    errmsg += "The extention to change to contains at least one illegal character: \"";
-
-                    foreach (string invalidC in invalidE)
-                    {
-                        if (invalidE.Length > 1 && invalidC != invalidE[0] && invalidC != invalidE[invalidE.Length - 1])
-                        {//if there is at least 2 invalid characters and we're not on the first invalid character nor the last
-                            errmsg += "\", \"";
-                        }
-
-                        if (invalidE.Length > 1 && invalidC == invalidE[invalidE.Length - 1])
-                        {//otherwise if we're on the second last invald character
-                            errmsg += "\" and \"";
-
-                        }
-
-                        errmsg += invalidC;
-                    }
-
-                    errmsg += "\".";
-                }
-
-                MessageBox.Show(errmsg, "Error: Invalid character", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                BtnMassRename.Enabled = true;
-                PreferencesTSMI.Enabled = true;
-
-            }
-            else
-            {
-                if (fsd.ShowDialog(IntPtr.Zero))                                                                                                        //show the file selector dialog box (order of presedence has that message boxes show first)
-                {                                                                                                                                       //Tif the dialog box has not returned an error or has closed (0)
-                    DialogResult result = DialogResult.Cancel;                                                                                          //|--set the default response from the dialog boxes to "Cancel"
-                    if (!DW)                                                                                                                            //|
-                    {                                                                                                                                   //|-Tif the warnings are NOT disabled
-                        result = MessageBox.Show("Are you sure? ALL FILES IN THIS FOLDER WILL BE RENAMED, " +                                           //| |
-                            "THIS CAN'T BE UNDON - NOT EVEN WITH CTRL+Z IN THE EXPLORER!", "Filepath: " + fsd.FileName, MessageBoxButtons.OKCancel,     //| |
-                            MessageBoxIcon.Warning);                                                                                                    //|-|---warn the user of the danger (message box)
-                    }
-                    else { result = DialogResult.OK; }                                                                                                //|-\c)e)otherwise set the result to "OK"                           
-                                                                                                                                                      //|
-                    string[] AFa = new string[0];                                                                                                       //|--prepare an array version AF for the randomize selection type
+            //reseting variables
+            split = 0;                                                                                                                                  //-reset the amount of files delegated per thread
+            ThreadProgressBar.Value = 0;                                                                                                                //-reset the thread progress bar's progress
+            tmpc = 1;                                                                                                                                   //-reset the TMPRN file # to default
+            reSync = new bool[processorCount];                                                                                                          //-reset the thread re syncer locker
+            Array.Resize(ref renamedFrom, 0);                                                                                                           //-clear the cross delegation array helper "renamedFrom"
+            Array.Resize(ref renamedTo, 0);                                                                                                             //-clear the cross delegation array helper "renamedTo"
+                                                                                                                                                        //
+            //setting globals                                                                                                                           //
+            active = true;                                                                                                                              //-set that the program is now mass renaming
+            BtnMassRename.Enabled = false;                                                                                                              //-disable the mass rename button
+            PreferencesTSMI.Enabled = false;                                                                                                            //-disable the File>preferences tool strip menu item
+            ThreadProgressBar.Refresh();                                                                                                                //-update the thread progress bar's UI to display correctly
+                                                                                                                                                        //
+            //setting locals                                                                                                                            //
+            string text = fileRenameTxtBx.Text;                                                                                                         //-get the user inputted text
+            int length = 0;                                                                                                                             //-store the amount of files in the folder selected as 'length'
+                                                                                                                                                        //
+            //setting temporary locals                                                                                                                  //
+            bool valid = true;                                                                                                                          //-use a bool variable to check if any naming conventions are incorrect and stopping the renaming if so
+            string[] invalidN = new string[0];                                                                                                          //-store each invalid character found in the fileRenameTxtBxs' text via an array
+            string[] invalidA = new string[0];                                                                                                          //-store each invalid character found in the textAfterNumTxtBx' text via an array
+            string[] invalidE = new string[0];                                                                                                          //-store each invalid character found in the extentionTxtBx' text via an array
+                                                                                                                                                        //
+            foreach (char invalidC in Path.GetInvalidFileNameChars())                                                                                   //
+            {                                                                                                                                           //T loop through each invalid file name character 
+                if (text.Contains(invalidC.ToString()))                                                                                                 //|
+                {                                                                                                                                       //|-T if the fileRenameTxtBxs' text contains the current character to check
+                    valid = false;                                                                                                                      //|-|--- set valid to false
+                    Array.Resize(ref invalidN, invalidN.Length + 1);                                                                                    //|-|--- store what the character is which exists in the text box's text
+                    invalidN[invalidN.Length - 1] = invalidC.ToString();                                                                                //| |
+                                                                                                                                                        //| |
+                }                                                                                                                                       //|-|e)
                                                                                                                                                         //|
-                    if (result == DialogResult.OK)                                                                                                      //|
-                    {                                                                                                                                   //|-Tif the result is "OK"
-                        DirectoryInfo di = new DirectoryInfo(fsd.FileName);                                                                             //|-|----get the selected directory (folder)
-                        length = di.GetFiles().Length;                                                                                                  //|-|----get how many files are in the folder
-                        IEnumerable<string> AF = Splitter.CustomSort(di.EnumerateFiles().Select(f => f.Name));                                          //|-|----get all files in the folder, sort by name (alphanumerically, not alphabraically)
+                if (textAfterNumTxtBx.Text.Contains(invalidC.ToString()))                                                                               //|
+                {                                                                                                                                       //|-T if the textAfterNumTxtBx' text contains the current character to check
+                    valid = false;                                                                                                                      //|-|--- set valid to false
+                    Array.Resize(ref invalidA, invalidA.Length + 1);                                                                                    //|-|--- store what the character is which exists in the text box's text
+                    invalidA[invalidA.Length - 1] = invalidC.ToString();                                                                                //| |
                                                                                                                                                         //| |
-                        if (alphabraicSTBtn.Checked)
-                        {                                                                                                  //|-|---Tif the user has defined to sort aphabraically
-                            AF = di.EnumerateFiles().Select(f => f.Name);                                                                               //|-|---|----sort
-                                                                                                                                                        //| |   |
-                        }
-                        else if (regexSTBtn.Checked)
-                        {                                                                                                //|-|---\c)if the user has defined to sort by a regular expression
-                                                                                                                         //WIP  //| |   |
-                                                                                                                         //| |   |
-                        }
-                        else if (randomSTBtn.Checked)
-                        {                                                                                               //| |   \c)if the user has defined to sort randomly
-                            Random ran = new Random();                                                                                                     //|-|---|----generate a random...thing
-                            AFa = di.EnumerateFiles().Select(f => f.Name).OrderBy(f => ran.Next()).ToArray();                                           //|-|---|----randomise the order
-                                                                                                                                                        //| |   |
-                        }                                                                                                                               //|-|---|e)
-                                                                                                                                                        //| |
-                        string firstFileName = "";                                                                                                      //|-|----prepare to get first file's name
-                                                                                                                                                        //| |
-                        if (!randomSTBtn.Checked)                                                                                                       //| |
-                        {                                                                                                                               //|-|---Tif the user has not selected to randomise the selection
-                            firstFileName = AF.FirstOrDefault();                                                                                        //|-|---|----get the first file's name (doesn't include directory)
-                            result = MessageBox.Show("Is " + firstFileName +                                                                            //| |   |
-                                " the first file in the folder and/or you DONT need to select a custom set of files?", "Filepath: "                     //| |   |
-                                + fsd.FileName, MessageBoxButtons.YesNo, MessageBoxIcon.Question);                                                      //|-|---|----verify the target file is the first file of the target file order (message box)
-                        }
-                        else
-                        {                                                                                                                        //|-|---\c)
-                            result = MessageBox.Show(" Do you want to NOT select a custom set of files?", "Filepath: " + fsd.FileName,                  //| |   |
-                                MessageBoxButtons.YesNo, MessageBoxIcon.Question);                                                                      //|-|---|----verify if the user wants to select multiple files, but not every file of the folder (message box)
-                        }                                                                                                                               //|-|---|e)
-                                                                                                                                                        //| |
-                        if (result == DialogResult.Yes)                                                                                                 //| |
-                        {                                                                                                                               //|-|---Tif the dialog box returns "Yes" of target file check
-                            bool testValid = true;
-                            foreach (string testFile in di.EnumerateFiles().Select(f => f.Name))
-                            {
-                                if (testFile.StartsWith("TMPRN"))
-                                {
-                                    testValid = false;
-                                }
-                            }
-
-                            if (testValid)
-                            {
-
-                                if (!DW)                                                                                                                    //| |   |
-                                {                                                                                                                           //|-|---|---Tif the warnings are NOT disabled
-                                    result = MessageBox.Show("Are you ABSOLUTELY sure?", "Last chance bukko!", MessageBoxButtons.YesNo,                     //| |   |   |
-                                    MessageBoxIcon.Question);                                                                                               //|-|---|---|----Preforme a final chech with the user (message box)
-                                }
-                                else { result = DialogResult.Yes; }                                                                                       //|-|---|---\c)e)otherwise set the result to "Yes"
-                                                                                                                                                          //| |   |
-                                if (result == DialogResult.Yes)                                                                                             //| |   |
-                                {                                                                                                                           //|-|---|---Tif the dialog box returns "Yes" again of final chech
-                                                                                                                                                            //| |   |   |
-                                    if (!randomSTBtn.Checked)                                                                                               //| |   |   |
-                                    {                                                                                                                       //|-|---|---|---Tif not randomizing
-
-                                        progress progressBar = new progress();
-                                        Form isOpen = Application.OpenForms["progress"];//get if the window is still open
-
-                                        if (isOpen != null) { isOpen.Close(); }//if it is then close it
-
-                                        progressBar.Show();
-                                        progressBar.progressBar1.Maximum = processorCount;
-                                        progressBar.Text = "Getting files to rename...";
-
-                                        split = int.Parse(Math.Ceiling((double)length / processorCount).ToString());//get the amount of files each thread will operate on (rounded up)
-                                        int fc = 0;//prepare to cound the amount of file names written to the ref files
-                                        StreamWriter[] stream = new StreamWriter[processorCount];//prepare to write to files
-
-                                        threadProgress = new string[processorCount * split];
-                                        for (uint pi = 0; pi < processorCount * split; pi++)
-                                        {
-                                            threadProgress[pi] = "";
-                                        }
-
-                                        //create ref files
-                                        for (int i = 1; i <= processorCount; i++)
-                                        {
-                                            stream[i - 1] = File.CreateText(path + @"\ref" + i + ".txt");//create a reference file for the thread to reffer to when getting which files to rename
-                                            stream[i - 1].AutoFlush = true;//write buffer to file after each WriteLine() function call
-
-                                            foreach (string file in AF.Skip(split * (i - 1)))//get each file, skipping the files that area already delegated
-                                            {
-                                                stream[i - 1].WriteLine(file);//write the reference file to the file 
-                                                fc++;//count the amount of files written in
-                                                progressBar.Text = file + " => " + "ref" + i + @"\" + processorCount;
-
-                                                if (fc >= split)
-                                                {//if all files delegated
-                                                    break;//stop delegating files
-                                                }
-
-                                            }
-                                            stream[i - 1].Close();//close the stream
-                                            progressBar.progressBar1.Value = i;
-                                            fc = 0;//reset the var
-                                        }
-
-                                        isOpen = Application.OpenForms["progress"];//get if the window is still open
-                                        if (isOpen != null)
-                                        { isOpen.Close(); }
-
-                                        //Test(fsd, openFileDialog1);
-                                        ThreadProgressBar.Maximum = processorCount * split;
-                                        ThreadProgressBar.Visible = true;
-                                        selectedPath = fsd.FileName;
-                                        ThreadProgressBar.Maximum = AF.Count();
-                                        backgroundThread.RunWorkerAsync();//start multi-threading
-
-                                    }
-                                    else
-                                    {                                                                                                                //| |   |   |   \c)otherwise if randomised
-                                        progress progressBar = new progress();
-                                        Form isOpen = Application.OpenForms["progress"];//get if the window is still open
-
-                                        if (isOpen != null) { isOpen.Close(); }//if it is then close it
-
-                                        progressBar.Show();
-                                        progressBar.progressBar1.Maximum = processorCount;
-                                        progressBar.Text = "Getting files to rename...";
-
-                                        split = int.Parse(Math.Ceiling((double)length / processorCount).ToString());//get the amount of files each thread will operate on (rounded up)
-                                        int fc = 0;//prepare to cound the amount of file names written to the ref files
-                                        StreamWriter[] stream = new StreamWriter[processorCount];//prepare to write to files
-
-                                        threadProgress = new string[processorCount * split];
-
-                                        for (uint pi = 0; pi < processorCount * split; pi++)
-                                        {
-                                            threadProgress[pi] = "";
-                                        }
-
-                                        for (int i = 1; i <= processorCount; i++)
-                                        {
-                                            stream[i - 1] = File.CreateText(path + @"\ref" + i + ".txt");//create a reference file for the thread to reffer to when getting which files to rename
-                                            stream[i - 1].AutoFlush = true;//write buffer to file after each WriteLine() function call
-
-                                            foreach (string file in AFa.Skip(split * (i - 1)))                                                               //get each file, skipping the files that area already delegated
-                                            {
-                                                stream[i - 1].WriteLine(file);//write the reference file to the file 
-                                                fc++;//count the amount of files written in
-                                                progressBar.Text = file + " => " + "ref" + i + @"\" + processorCount;
-
-                                                if (fc >= split)
-                                                {//if all files delegated
-                                                    break;//stop delegating files
-                                                }
-
-                                            }
-                                            stream[i - 1].Close();//close the stream
-                                            progressBar.progressBar1.Value = i;
-
-                                            fc = 0;//reset the var
-                                        }
-
-                                        isOpen = Application.OpenForms["progress"];//get if the window is still open
-                                        if (isOpen != null)
-                                        { isOpen.Close(); }
-
-                                        ThreadProgressBar.Maximum = processorCount * split;
-                                        ThreadProgressBar.Visible = true;
-                                        selectedPath = fsd.FileName;
-                                        ThreadProgressBar.Maximum = AFa.Count();
-                                        backgroundThread.RunWorkerAsync();
-
-                                    }                                                                                                                       //| |   |   |   |e)
-                                    if (RTC == 0) { RTC = 1; }                                                                                              //|-|---|---|----Report succesfull run
-                                                                                                                                                            //| |   |   |
-                                }                                                                                                                           //|-|---|---|e)if the dialog box returns "No" of final chech; END.
-                                                                                                                                                            //| |   |
-                            }
-                            else {
-                                MessageBox.Show("One or more files start with \"TMPRN\" which is a reserved name, please rename these files to anything else.");
-                                BtnMassRename.Enabled = true;
-                                PreferencesTSMI.Enabled = true;
-                                active = false;
-                                textAfterNumTxtBx.Text = "Text after number (optional)";
-                                i = 0;
-                            }
-                        }
-                        else
-                        {                                                                                                                        //|-|---\c)if the dialog box returns "No" of target file check
-                            if (!DW)                                                                                                                    //| |   |
-                            {                                                                                                                           //|-|---|---Tif the warnings are NOT disabled
-                                MessageBox.Show("To sort the files selected, right click on the dialog and use the 'sort by' option",                   //| |   |   |
-                                        "Reminder!");                                                                                                   //|-|---|---|----Remind the user how to sort in this circumstance
-                            }                                                                                                                           //| |   |   |e)
-                                                                                                                                                        //| |   |
-                            openFileDialog1.InitialDirectory = fsd.FileName;                                                                            //|-|---|----open the same directory
-                            DialogResult dlgr = openFileDialog1.ShowDialog();                                                                           //|-|---|----show the file selecter dialog
-                            openFileDialog1.Title = "Select all files to rename";                                                                       //| |   |----change the title of the dialog to signify multi-select is active
-                            if (dlgr == DialogResult.OK)                                                                                                //| |   |      
-                            {                                                                                                                           //|-|---|---Tif the return from the dialog is "OK" of the file selecter
-                                firstFileName = null;                                                                                                   //|-|---|---|----reset the first gotten file in case the files have changed or a new folder is selected
-                                                                                                                                                        //| |   |   |
-                                while (firstFileName == null)                                                                                           //| |   |   |    
-                                {                                                                                                                       //|-|---|---|---Twhile the first file is not gotten
-                                    firstFileName = openFileDialog1.FileName;                                                                           //|-|---|---|---|----wait untill the dialog box is closed
-                                                                                                                                                        //| |   |   |   |    note: unlike the above method, this returns the full directory
-                                    if (firstFileName == null)                                                                                          //| |   |   |   |    
-                                    {                                                                                                                   //|-|---|---|---|---Tif the first file is still not avalible
-                                        DialogResult bgr = MessageBox.Show("could not get file, try again...", "Could not find the selected file!",     //| |   |   |   |   |
-                                            MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);                                                    //|-|---|---|---|---|----tell the user the file might not exist (message box)
-                                                                                                                                                        //| |   |   |   |   |
-                                        if (bgr == DialogResult.Cancel)                                                                                 //| |   |   |   |   |
-                                        {                                                                                                               //|-|---|---|---|---|---Tif the user decides it's not going to work (presses cancel)
-                                            BtnMassRename.Enabled = true;
-                                            PreferencesTSMI.Enabled = true;
-                                            Close();                                                                                                    //|-|---|---|---|---|---|----brake out of the loop
-                                                                                                                                                        //| |   |   |   |   |   |
-                                        }                                                                                                               //|-|---|---|---|---|---|e)
-                                                                                                                                                        //| |   |   |   |   |
-                                    }                                                                                                                   //|-|---|---|---|---|e)force loop as file is still invalid
-                                                                                                                                                        //| |   |   |   |    
-                                }                                                                                                                       //|-|---|---|---|W)file found
-                                                                                                                                                        //| |   |   |
-                                bool testValid = true;
-                                foreach (string testFile in openFileDialog1.SafeFileNames)
-                                {
-                                    if (testFile.StartsWith("TMPRN"))
-                                    {
-                                        testValid = false;
-                                    }
-                                }
-
-                                if (testValid)
-                                {
-                                    if (!DW)                                                                                                                //| |   |   |
-                                    {                                                                                                                       //|-|---|---|---Tif the warnings are NOT disabled
-                                        result = MessageBox.Show("Are you ABSOLUTELY sure?", "Last chance bukko!", MessageBoxButtons.YesNo,                 //| |   |   |   |
-                                        MessageBoxIcon.Question);                                                                                           //|-|---|---|---|----Preforme a final chech with the user (message box)
-                                    }
-                                    else { result = DialogResult.Yes; }                                                                                   //|-|---|---|---\c)e)otherwise set the result to "Yes"
-                                                                                                                                                          //| |   |   |              
-                                    if (result == DialogResult.Yes)                                                                                         //| |   |   |
-                                    {                                                                                                                       //|-|---|---|---Tif the dialog box returns "Yes" of the final check
-
-                                        length = openFileDialog1.FileNames.Length;                                                                          //|-|---|---|---|----reset 'length' to the amount of files selected
-                                                                                                                                                            //| |   |   |   |          
-                                        if (!randomSTBtn.Checked)                                                                                               //| |   |   |
-                                        {                                                                                                                       //|-|---|---|---Tif not randomizing
-                                            progress progressBar = new progress();
-                                            Form isOpen = Application.OpenForms["progress"];//get if the window is still open
-
-                                            if (isOpen != null) { isOpen.Close(); }//if it is then close it
-
-                                            progressBar.Show();
-                                            progressBar.progressBar1.Maximum = processorCount;
-                                            progressBar.Text = "Getting files to rename...";
-
-                                            split = int.Parse(Math.Ceiling((double)length / processorCount).ToString());//get the amount of files each thread will operate on (rounded up)
-                                            int fc = 0;//prepare to cound the amount of file names written to the ref files
-                                            StreamWriter[] stream = new StreamWriter[processorCount];//prepare to write to files
-
-                                            threadProgress = new string[processorCount * split];
-
-                                            for (uint pi = 0; pi < processorCount; pi++)
-                                            {
-                                                threadProgress[pi] = "";
-                                            }
-
-                                            for (int i = 1; i <= processorCount; i++)
-                                            {
-                                                stream[i - 1] = File.CreateText(path + @"\ref" + i + ".txt");//create a reference file for the thread to reffer to when getting which files to rename
-                                                stream[i - 1].AutoFlush = true;//write buffer to file after each WriteLine() function call
-
-                                                foreach (string file in openFileDialog1.SafeFileNames.Skip(split * (i - 1)))                                                               //get each file, skipping the files that area already delegated
-                                                {
-                                                    stream[i - 1].WriteLine(file);//write the reference file to the file 
-                                                    fc++;//count the amount of files written in
-                                                    progressBar.Text = file + " => " + "ref" + i + @"\" + processorCount;
-
-                                                    if (fc >= split)
-                                                    {//if all files delegated
-                                                        break;//stop delegating files
-                                                    }
-
-                                                }
-                                                stream[i - 1].Close();//close the stream
-                                                progressBar.progressBar1.Value = i;
-
-                                                fc = 0;//reset the var
-                                            }
-
-                                            isOpen = Application.OpenForms["progress"];//get if the window is still open
-                                            if (isOpen != null)
-                                            { isOpen.Close(); }
-
-                                            ThreadProgressBar.Maximum = processorCount * split;
-                                            ThreadProgressBar.Visible = true;
-                                            selectedPath = firstFileName.Replace(openFileDialog1.SafeFileName, "");
-                                            selectedPath = selectedPath.Remove(selectedPath.Length - 1);
-                                            ThreadProgressBar.Maximum = openFileDialog1.SafeFileNames.Count();
-                                            backgroundThread.RunWorkerAsync();//start multi-threading
-                                        }
-                                        else
-                                        {                                                                                                                //| |   |   |   \c)otherwise if randomised
-
-                                            Random ran = new Random();                                                                                                     //|-|---|----generate a random...thing
-                                                                                                                                                                           //AFa = di.EnumerateFiles().Select(f => f.Name).OrderBy(f => ran.Next()).ToArray();                                           //|-|---|----randomise the order
-                                            AFa = openFileDialog1.SafeFileNames.Select(f => f).OrderBy(f => ran.Next()).ToArray();                                           //|-|---|----randomise the order
-
-                                            progress progressBar = new progress();
-                                            Form isOpen = Application.OpenForms["progress"];//get if the window is still open
-
-                                            if (isOpen != null) { isOpen.Close(); }//if it is then close it
-
-                                            progressBar.Show();
-                                            progressBar.progressBar1.Maximum = processorCount;
-                                            progressBar.Text = "Getting files to rename...";
-
-                                            split = int.Parse(Math.Ceiling((double)length / processorCount).ToString());//get the amount of files each thread will operate on (rounded up)
-                                            int fc = 0;//prepare to cound the amount of file names written to the ref files
-                                            StreamWriter[] stream = new StreamWriter[processorCount];//prepare to write to files
-
-                                            threadProgress = new string[processorCount * split];
-
-                                            for (uint pi = 0; pi < processorCount; pi++)
-                                            {
-                                                threadProgress[pi] = "";
-                                            }
-
-                                            for (int i = 1; i <= processorCount; i++)
-                                            {
-                                                stream[i - 1] = File.CreateText(path + @"\ref" + i + ".txt");//create a reference file for the thread to reffer to when getting which files to rename
-                                                stream[i - 1].AutoFlush = true;//write buffer to file after each WriteLine() function call
-
-                                                foreach (string file in AFa.Skip(split * (i - 1)))                                                               //get each file, skipping the files that area already delegated
-                                                {
-                                                    stream[i - 1].WriteLine(file);//write the reference file to the file 
-                                                    fc++;//count the amount of files written in
-                                                    progressBar.Text = file + " => " + "ref" + i + @"\" + processorCount;
-
-                                                    if (fc >= split)
-                                                    {//if all files delegated
-                                                        break;//stop delegating files
-                                                    }
-
-                                                }
-                                                stream[i - 1].Close();//close the stream
-                                                progressBar.progressBar1.Value = i;
-
-                                                fc = 0;//reset the var
-                                            }
-
-                                            isOpen = Application.OpenForms["progress"];//get if the window is still open
-                                            if (isOpen != null)
-                                            { isOpen.Close(); }
-
-                                            ThreadProgressBar.Maximum = processorCount * split;
-                                            ThreadProgressBar.Visible = true;
-                                            selectedPath = firstFileName.Replace(openFileDialog1.SafeFileName, "");
-                                            selectedPath = selectedPath.Remove(selectedPath.Length - 1);
-                                            ThreadProgressBar.Maximum = AFa.Count();
-                                            backgroundThread.RunWorkerAsync();
-
-                                        }                                                                                                                       //| |   |   |   |e)
-                                                                                                                                                                //| |   |   |   |
-                                        if (RTC == 0) { RTC = 1; }                                                                                          //|-|---|---|---|----Report succesfull run
-                                                                                                                                                            //| |   |   |   |
-                                    }                                                                                                                       //|-|---|---|---|e)
-                                }
-                                else {
-                                    MessageBox.Show("One or more files start with \"TMPRN\" which is a reserved name, please rename these files to anything else.");
-                                    BtnMassRename.Enabled = true;
-                                    PreferencesTSMI.Enabled = true;
-                                    active = false;
-                                    textAfterNumTxtBx.Text = "Text after number (optional)";
-                                    i = 0;
-                                }
-                            }
-                            else
-                            {                                                                                                                    //|-|---|---\c)if the user cancled file selection dialog (mutli-select)
-                                RTC = 2;                                                                                                                //|-|---|---|----Report a minor error occured
-                                BtnMassRename.Enabled = true;
-                                PreferencesTSMI.Enabled = true;
-                                MessageBox.Show("An error occured or the process was aborted!");                                                        //|-|---|---|----Tell them the process failed
-                                                                                                                                                        //|-|---|---|
-                            }                                                                                                                           //|-|---|---|e)
-                        }                                                                                                                               //|-|---|e)
-                    }                                                                                                                                   //|-|e)
-                }
-                else
-                {                                                                                                                                //\c)if the user cancled file selection dialog (single select)
-                    RTC = 2;                                                                                                                            //|--Report a minor error occured
-                    BtnMassRename.Enabled = true;
-                    PreferencesTSMI.Enabled = true;
-                    MessageBox.Show("An error occured or the process was aborted!");                                                                    //|--Tell them the process failed
+                }                                                                                                                                       //|-|e)
                                                                                                                                                         //|
-                }                                                                                                                                       //|e)
-            }
-                                                                                                                                                    //
-                                                                                                                                                    //
-            //----------------------------
+                if (("." + extentionTxtBx.Text).Contains(invalidC.ToString()))                                                                          //|
+                {                                                                                                                                       //|-T if the extentionTxtBx' text contains the current character to check
+                    valid = false;                                                                                                                      //|-|--- set valid to false
+                    Array.Resize(ref invalidE, invalidE.Length + 1);                                                                                    //|-|--- store what the character is which exists in the text box's text
+                    invalidE[invalidE.Length - 1] = invalidC.ToString();                                                                                //| |
+                                                                                                                                                        //| |
+                }                                                                                                                                       //|-|e)
+                                                                                                                                                        //|
+            }                                                                                                                                           //|L)
+                                                                                                                                                        //
+            if (textAfterNumTxtBx.Text.Contains("."))                                                                                                   //
+            {                                                                                                                                           //T if textAfterNumTxtBxs' text has a "." in it
+                valid = false;                                                                                                                          //|-- set valid to false
+                Array.Resize(ref invalidA, invalidA.Length + 1);                                                                                        //|-- store what the character is which exists in the text box's text
+                invalidA[invalidA.Length - 1] = ".";                                                                                                    //|
+                                                                                                                                                        //|
+            }                                                                                                                                           //|e)
+                                                                                                                                                        //
+            if (extentionTxtBx.Text.Contains("."))                                                                                                      //
+            {                                                                                                                                           //T if textAfterNumTxtBxs' text has a "." in it
+                valid = false;                                                                                                                          //|-- set valid to false
+                Array.Resize(ref invalidE, invalidE.Length + 1);                                                                                        //|-- store what the character is which exists in the text box's text
+                invalidE[invalidE.Length - 1] = ".";                                                                                                    //|
+                                                                                                                                                        //|
+            }                                                                                                                                           //|e)
+                                                                                                                                                        //
+            if (!valid)                                                                                                                                 //
+            {                                                                                                                                           //T If there is at least one invalid character in the text boxes
+                string errmsg = "Please amend these issues to start the renaming process:\n\n";                                                         //|-- store the first part of the message to show the user
+                                                                                                                                                        //|
+                if (invalidN.Length > 0)                                                                                                                //|
+                {                                                                                                                                       //|-T if the number of invalid characters in fileRenameTxtBx's text is at least 1
+                    errmsg += "The name to rename the files to contains at least one illegal character: \"";                                            //|-|--- add to the message that the fileRenameTxtBx's text contains ar least one illeagl character
+                                                                                                                                                        //| |
+                    foreach (string invalidC in invalidN)                                                                                               //| |
+                    {                                                                                                                                   //|-|--T loop through each invalid character found
+                        if (invalidN.Length > 1 && invalidC != invalidN[0] && invalidC != invalidN[invalidN.Length-1]) {                                //|-|--|---T if there is at least 2 invalid characters and we're not on the first invalid character nor the last
+                            errmsg += "\", \"";                                                                                                         //|-|--|---|----- add a ", " (including quotation marks) to the message
+                        }                                                                                                                               //|-|--|---|e)
+                                                                                                                                                        //| |  |
+                        if (invalidN.Length > 1 && invalidC == invalidN[invalidN.Length-1]) {                                                           //|-|--|---T otherwise? if we're on the second last invald character
+                            errmsg += "\" and \"";                                                                                                      //|-|--|---|----- add a " and " (including quotation marks) to the message
+                                                                                                                                                        //| |  |   |
+                        }                                                                                                                               //|-|--|---|e)
+                                                                                                                                                        //| |  |
+                        errmsg += invalidC;                                                                                                             //|-|--|---- add the invalid character to the message
+                    }                                                                                                                                   //|-|--|L)
+                                                                                                                                                        //| |
+                    errmsg += "\".";                                                                                                                    //|-|--- add ". (including the quotation mark) to the messege
+                    if (invalidA.Length > 0 || invalidE.Length > 0)                                                                                     //| |
+                    {                                                                                                                                   //|-|--T if there are more invalid characters in either of the other text boxes
+                        errmsg += "\n";                                                                                                                 //|-|--|---- add a new line character to the message
+                    }                                                                                                                                   //|-|--|e)
+                                                                                                                                                        //| |
+                }                                                                                                                                       //|-|e)
+                                                                                                                                                        //|
+                if (invalidA.Length > 0)                                                                                                                //|
+                {                                                                                                                                       //|-T if the number of invalid characters in textAfterNumTxtBx's text is at least 1
+                    errmsg += "The text to include after the counter contains at least one illegal character: \"";                                      //|-|--- add to the message that the textAfterNumTxtBx's text contains ar least one illeagl character
+                                                                                                                                                        //| |
+                    foreach (string invalidC in invalidA)                                                                                               //| |
+                    {                                                                                                                                   //|-|--T loop through each invalid character found
+                        if (invalidA.Length > 1 && invalidC != invalidA[0] && invalidC != invalidA[invalidA.Length - 1]) {                              //|-|--|---T if there is at least 2 invalid characters and we're not on the first invalid character nor the last
+                            errmsg += "\", \"";                                                                                                         //|-|--|---|----- add a ", " (including quotation marks) to the message
+                        }                                                                                                                               //|-|--|---|e)
+                                                                                                                                                        //| |  |
+                        if (invalidA.Length > 1 && invalidC == invalidA[invalidA.Length - 1]) {                                                         //|-|--|---T otherwise? if we're on the second last invald character
+                            errmsg += "\" and \"";                                                                                                      //|-|--|---|----- add a " and " (including quotation marks) to the message
+                                                                                                                                                        //| |  |   |
+                        }                                                                                                                               //|-|--|---|e)
+                                                                                                                                                        //| |  |
+                        errmsg += invalidC;                                                                                                             //|-|--|---- add the invalid character to the message
+                    }                                                                                                                                   //|-|--|L)
+                                                                                                                                                        //| |
+                    errmsg += "\".";                                                                                                                    //|-|--- add ". (including the quotation mark) to the messege
+                    if (invalidE.Length > 0)                                                                                                            //| |
+                    {                                                                                                                                   //|-|--T if there are more invalid characters in either of the other text boxes
+                        errmsg += "\n";                                                                                                                 //|-|--|---- add a new line character to the message
+                    }                                                                                                                                   //|-|--|e)
+                                                                                                                                                        //| |
+                }                                                                                                                                       //|-|e)
+                                                                                                                                                        //|
+                if (invalidE.Length > 0)                                                                                                                //|
+                {                                                                                                                                       //|-T if the number of invalid characters in textAfterNumTxtBx's text is at least 1
+                    errmsg += "The extention to change to contains at least one illegal character: \"";                                                 //|-|--- add to the message that the textAfterNumTxtBx's text contains ar least one illeagl character
+                                                                                                                                                        //| |
+                    foreach (string invalidC in invalidE)                                                                                               //| |
+                    {                                                                                                                                   //|-|--T loop through each invalid character found
+                        if (invalidE.Length > 1 && invalidC != invalidE[0] && invalidC != invalidE[invalidE.Length - 1]) {                              //|-|--|---T if there is at least 2 invalid characters and we're not on the first invalid character nor the last
+                            errmsg += "\", \"";                                                                                                         //|-|--|---|----- add a ", " (including quotation marks) to the message
+                        }                                                                                                                               //|-|--|---|e)
+                                                                                                                                                        //| |  |
+                        if (invalidE.Length > 1 && invalidC == invalidE[invalidE.Length - 1]) {                                                         //|-|--|---T otherwise? if we're on the second last invald character
+                            errmsg += "\" and \"";                                                                                                      //|-|--|---|----- add a " and " (including quotation marks) to the message
+                                                                                                                                                        //| |  |   |
+                        }                                                                                                                               //|-|--|---|e)
+                                                                                                                                                        //| |  |
+                        errmsg += invalidC;                                                                                                             //|-|--|---- add the invalid character to the message
+                    }                                                                                                                                   //|-|--|L)
+                                                                                                                                                        //| |
+                    errmsg += "\".";                                                                                                                    //|-|--- add ". (including the quotation mark) to the messege
+                }                                                                                                                                       //|-|e)
+                                                                                                                                                        //|
+                MessageBox.Show(errmsg, "Error: Invalid character", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);                                  //|-- warn the user of the invalid characters present in the text boxes
+                BtnMassRename.Enabled = true;                                                                                                           //|-- re-enable the mass rename button
+                PreferencesTSMI.Enabled = true;                                                                                                         //|-- re-enable the File>Preferences TSMI
+                                                                                                                                                        //|
+            } else {                                                                                                                                    //\c) otherwise if there are no invalid characters in any of the text feilds
+                if (textAfterNumTxtBx.Text == "Text after number (optional)") { textAfterNumTxtBx.Text = ""; }                                          //|-Te) if the 'text after number' feild has not been filled; set it to nothing (so that it doesn't affect the process)
+                                                                                                                                                        //|
+                if (fsd.ShowDialog(IntPtr.Zero))                                                                                                        //|-- show the file selector dialog box (order of presedence has that message boxes show first)
+                {                                                                                                                                       //|-T if the dialog box has not returned an error or has closed (0)
+                    DialogResult result = DialogResult.Cancel;                                                                                          //|-|--- set the default response from the dialog boxes to "Cancel"
+                                                                                                                                                        //| |
+                    if (!DW)                                                                                                                            //| |
+                    {                                                                                                                                   //|-|--T if the warnings are NOT disabled
+                        result = MessageBox.Show("Are you sure? ALL FILES IN THIS FOLDER WILL BE RENAMED, " +                                           //| |  |
+                            "THIS CAN'T BE UNDON - NOT EVEN WITH CTRL+Z IN THE EXPLORER!", "Filepath: " + fsd.FileName, MessageBoxButtons.OKCancel,     //| |  |
+                            MessageBoxIcon.Warning);                                                                                                    //|-|--|---- warn the user of the danger (message box)
+                    } else { result = DialogResult.OK; }                                                                                                //|-|--\c)e) otherwise set the result to "OK"                           
+                                                                                                                                                        //| |
+                    string[] AFa = new string[0];                                                                                                       //|-|--- prepare an array version AF for the randomize selection type
+                                                                                                                                                        //| |
+                    if (result == DialogResult.OK)                                                                                                      //| |
+                    {                                                                                                                                   //|-|--T if the result is "OK"
+                        DirectoryInfo di = new DirectoryInfo(fsd.FileName);                                                                             //|-|--|---- get the selected directory (folder)
+                        length = di.GetFiles().Length;                                                                                                  //|-|--|---- get how many files are in the folder
+                        IEnumerable<string> AF = Splitter.CustomSort(di.EnumerateFiles().Select(f => f.Name));                                          //|-|--|---- get all files in the folder, sort by name (alphanumerically, not alphabraically)
+                                                                                                                                                        //| |  |
+                        if (alphabraicSTBtn.Checked) {                                                                                                  //|-|--|---T if the user has defined to sort aphabraically
+                            AF = di.EnumerateFiles().Select(f => f.Name);                                                                               //|-|--|---|----- sort
+                                                                                                                                                        //| |  |   |
+                        } else if (regexSTBtn.Checked) {                                                                                                //|-|--|---\c) if the user has defined to sort by a regular expression
+                                                                                                                                                        //| |  |   |WIP
+                                                                                                                                                        //| |  |   |
+                        } else if (randomSTBtn.Checked) {                                                                                               //|-|--|---\c) if the user has defined to sort randomly
+                            Random ran = new Random();                                                                                                  //|-|--|---|----- generate a random...thing
+                            AFa = di.EnumerateFiles().Select(f => f.Name).OrderBy(f => ran.Next()).ToArray();                                           //|-|--|---|----- randomise the order
+                                                                                                                                                        //| |  |   |
+                        }                                                                                                                               //|-|--|---|e)
+                                                                                                                                                        //| |  |
+                        string firstFileName = "";                                                                                                      //|-|--|---- prepare to get first file's name
+                                                                                                                                                        //| |  |
+                        if (!randomSTBtn.Checked)                                                                                                       //| |  |
+                        {                                                                                                                               //|-|--|---T if the user has not selected to randomise the selection
+                            firstFileName = AF.FirstOrDefault();                                                                                        //|-|--|---|----- get the first file's name (doesn't include directory)
+                            result = MessageBox.Show("Is " + firstFileName +                                                                            //| |  |   |
+                                " the first file in the folder and/or you DONT need to select a custom set of files?", "Filepath: "                     //| |  |   |
+                                + fsd.FileName, MessageBoxButtons.YesNo, MessageBoxIcon.Question);                                                      //|-|--|---|----- verify the target file is the first file of the target file order (message box)
+                        } else {                                                                                                                        //|-|--|---\c)
+                            result = MessageBox.Show(" Do you want to NOT select a custom set of files?", "Filepath: " + fsd.FileName,                  //| |  |   |
+                                MessageBoxButtons.YesNo, MessageBoxIcon.Question);                                                                      //|-|--|---|----- verify if the user wants to select multiple files, but not every file of the folder (message box)
+                        }                                                                                                                               //|-|--|---|e)
+                                                                                                                                                        //| |  |
+                        if (result == DialogResult.Yes)                                                                                                 //| |  |
+                        {                                                                                                                               //|-|--|---T if the dialog box returns "Yes" of target file check
+                            bool testValid = true;                                                                                                      //|-|--|---|----- store a variable (testValid) defining if this test case occurs:
+                            foreach (string testFile in di.EnumerateFiles().Select(f => f.Name))                                                        //| |  |   |
+                            {                                                                                                                           //|-|--|---|----T loop for every file selected
+                                if (testFile.StartsWith("TMPRN"))                                                                                       //| |  |   |    |
+                                {                                                                                                                       //|-|--|---|----|-----T if the current file to test starts with "TMPRN"
+                                    testValid = false;                                                                                                  //|-|--|---|----|-----|------- set test case as failed (testValid as false)
+                                }                                                                                                                       //|-|--|---|----|-----|e) (implied: otherwise keep testValid as true)
+                            }                                                                                                                           //|-|--|---|----|L)
+                                                                                                                                                        //| |  |   |
+                            if (testValid)                                                                                                              //| |  |   |
+                            {                                                                                                                           //|-|--|---|----T if test case succeeded (testValid is true)
+                                                                                                                                                        //| |  |   |    |
+                                if (!DW)                                                                                                                //| |  |   |    |
+                                {                                                                                                                       //|-|--|---|----|-----T if the warnings are NOT disabled
+                                    result = MessageBox.Show("Are you ABSOLUTELY sure?", "Last chance bukko!", MessageBoxButtons.YesNo,                 //| |  |   |    |     |
+                                    MessageBoxIcon.Question);                                                                                           //|-|--|---|----|-----|------- Preforme a final chech with the user (message box)
+                                } else { result = DialogResult.Yes; }                                                                                   //|-|--|---|----|-----\c)e) otherwise set the result to "Yes"
+                                                                                                                                                        //| |  |   |    |
+                                if (result == DialogResult.Yes)                                                                                         //| |  |   |    |
+                                {                                                                                                                       //|-|--|---|----|-----T if the dialog box returns "Yes" again of final chech
+                                                                                                                                                        //| |  |   |    |     |
+                                    if (!randomSTBtn.Checked)                                                                                           //| |  |   |    |     |
+                                    {                                                                                                                   //|-|--|---|----|-----|------T if not randomizing
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        split = int.Parse(Math.Ceiling((double)length / processorCount).ToString());                                    //|-|--|---|----|-----|------|-------- get the amount of files each thread will operate on (rounded up) [variable name: split]
+                                        progress progressBar = new progress();                                                                          //|-|--|---|----|-----|------|-------- create a new other-form progress bar
+                                        Form isOpen = Application.OpenForms["progress"];                                                                //|-|--|---|----|-----|------|-------- get if another window of this is still open (incase an error occured and this was never closed )
+                                        if (isOpen != null) { isOpen.Close(); }                                                                         //|-|--|---|----|-----|------|-------Te) if it is then close it
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        progressBar.Show();                                                                                             //|-|--|---|----|-----|------|-------- show the progress bar
+                                        progressBar.progressBar1.Maximum = processorCount * split;                                                      //|-|--|---|----|-----|------|-------- set the maxiumum to the aproximate amount of files
+                                        progressBar.Text = "Getting files to rename...";                                                                //|-|--|---|----|-----|------|-------- change the title of the progress bar to "Getting files to rename..."
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        int fc = 0;                                                                                                     //|-|--|---|----|-----|------|-------- prepare to cound the amount of file names written to the ref files
+                                        StreamWriter[] stream = new StreamWriter[processorCount];                                                       //|-|--|---|----|-----|------|-------- prepare to write to files
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        threadProgress = new string[processorCount * split];                                                            //|-|--|---|----|-----|------|-------- reset threadProgress[]
+                                        for (uint pi = 0; pi < processorCount * split; pi++)                                                            //| |  |   |    |     |      |
+                                        {                                                                                                               //| |  |   |    |     |      |
+                                            threadProgress[pi] = "";                                                                                    //| |  |   |    |     |      |
+                                        }                                                                                                               //| |  |   |    |     |      |
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        //create ref files                                                                                              //| |  |   |    |     |      |
+                                        for (int i = 1; i <= processorCount; i++)                                                                       //| |  |   |    |     |      |
+                                        {                                                                                                               //|-|--|---|----|-----|------|-------T loop for the amount of processors avalible to use starting from i=1
+                                            stream[i - 1] = File.CreateText(path + @"\ref" + i + ".txt");                                               //|-|--|---|----|-----|------|-------|--------- create a reference file for the thread to reffer to when getting which files to rename
+                                            stream[i - 1].AutoFlush = true;                                                                             //|-|--|---|----|-----|------|-------|--------- write buffer to file after each WriteLine() function call
+                                                                                                                                                        //| |  |   |    |     |      |       |
+                                            foreach (string file in AF.Skip(split * (i - 1)))                                                           //| |  |   |    |     |      |       |
+                                            {                                                                                                           //|-|--|---|----|-----|------|-------|--------T (loop) get each file, skipping the files that area already delegated
+                                                stream[i - 1].WriteLine(file);                                                                          //|-|--|---|----|-----|------|-------|--------|---------- write the reference file to the file 
+                                                fc++;                                                                                                   //|-|--|---|----|-----|------|-------|--------|---------- count the amount of files written in
+                                                progressBar.Text = file + " => " + "ref" + i + @"\" + processorCount;                                   //|-|--|---|----|-----|------|-------|--------|---------- change the progress bars title to reflect which file is being delegated to what file and how much progress has been made
+                                                                                                                                                        //| |  |   |    |     |      |       |        |
+                                                if (fc >= split)                                                                                        //| |  |   |    |     |      |       |        |
+                                                {                                                                                                       //|-|--|---|----|-----|------|-------|--------|---------T if all files delegated
+                                                    break;                                                                                              //|-|--|---|----|-----|------|-------|--------|---------|----------- stop delegating files
+                                                }                                                                                                       //|-|--|---|----|-----|------|-------|--------|---------|e)
+                                                                                                                                                        //| |  |   |    |     |      |       |        |
+                                            }                                                                                                           //|-|--|---|----|-----|------|-------|--------|L)
+                                            stream[i - 1].Close();                                                                                      //|-|--|---|----|-----|------|-------|--------- close the streams
+                                            progressBar.progressBar1.Value++;                                                                           //|-|--|---|----|-----|------|-------|--------- itterate the progress bar
+                                            fc = 0;                                                                                                     //|-|--|---|----|-----|------|-------|--------- reset the file count
+                                        }                                                                                                               //|-|--|---|----|-----|------|-------|e)
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        isOpen = Application.OpenForms["progress"];                                                                     //|-|--|---|----|-----|------|-------- get if the progress window is still open
+                                        if (isOpen != null) { isOpen.Close(); }                                                                         //|-|--|---|----|-----|------|-------Te) if it is then close it
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        ThreadProgressBar.Visible = true;                                                                               //|-|--|---|----|-----|------|-------- make the thread progress bar visible
+                                        selectedPath = fsd.FileName;                                                                                    //|-|--|---|----|-----|------|-------- set the currently selected path to this routs selected path
+                                        ThreadProgressBar.Maximum = AF.Count();                                                                         //|-|--|---|----|-----|------|-------- set the thread progress bar's maximum to the amount of files there are
+                                        backgroundThread.RunWorkerAsync();                                                                              //|-|--|---|----|-----|------|-------- start multi-threading (go to backgroundWorker1_DoWork())
+                                                                                                                                                        //| |  |   |    |     |      |
+                                    } else {                                                                                                            //|-|--|---|----|-----|------\c)otherwise if randomised
+                                        progress progressBar = new progress();                                                                          //|-|--|---|----|-----|------|-------- create a new other-form progress bar
+                                        Form isOpen = Application.OpenForms["progress"];                                                                //|-|--|---|----|-----|------|-------- get if another window of this is still open (incase an error occured and this was never closed )
+                                        if (isOpen != null) { isOpen.Close(); }                                                                         //|-|--|---|----|-----|------|-------Te) if it is then close it
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        progressBar.Show();                                                                                             //|-|--|---|----|-----|------|-------- show the progress bar
+                                        progressBar.progressBar1.Maximum = processorCount;                                                              //|-|--|---|----|-----|------|-------- set the maxiumum to the aproximate amount of files
+                                        progressBar.Text = "Getting files to rename...";                                                                //|-|--|---|----|-----|------|-------- change the title of the progress bar to "Getting files to rename..."
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        split = int.Parse(Math.Ceiling((double)length / processorCount).ToString());                                    //|-|--|---|----|-----|------|-------- get the amount of files each thread will operate on (rounded up) [variable name: split]
+                                        int fc = 0;                                                                                                     //|-|--|---|----|-----|------|-------- prepare to cound the amount of file names written to the ref files
+                                        StreamWriter[] stream = new StreamWriter[processorCount];                                                       //|-|--|---|----|-----|------|-------- prepare to write to files
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        threadProgress = new string[processorCount * split];                                                            //|-|--|---|----|-----|------|-------- reset threadProgress[]
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        for (uint pi = 0; pi < processorCount * split; pi++)                                                            //| |  |   |    |     |      |
+                                        {                                                                                                               //| |  |   |    |     |      |
+                                            threadProgress[pi] = "";                                                                                    //| |  |   |    |     |      |
+                                        }                                                                                                               //| |  |   |    |     |      |
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        for (int i = 1; i <= processorCount; i++)                                                                       //| |  |   |    |     |      |
+                                        {                                                                                                               //|-|--|---|----|-----|------|-------T loop for the amount of processors avalible to use starting from i=1
+                                            stream[i - 1] = File.CreateText(path + @"\ref" + i + ".txt");                                               //|-|--|---|----|-----|------|-------|--------- create a reference file for the thread to reffer to when getting which files to rename
+                                            stream[i - 1].AutoFlush = true;                                                                             //|-|--|---|----|-----|------|-------|--------- write buffer to file after each WriteLine() function call
+                                                                                                                                                        //| |  |   |    |     |      |       |
+                                            foreach (string file in AFa.Skip(split * (i - 1)))                                                          //| |  |   |    |     |      |       |     
+                                            {                                                                                                           //|-|--|---|----|-----|------|-------|--------T (loop) get each file, skipping the files that area already delegated
+                                                stream[i - 1].WriteLine(file);                                                                          //|-|--|---|----|-----|------|-------|--------|---------- write the reference file to the file 
+                                                fc++;                                                                                                   //|-|--|---|----|-----|------|-------|--------|---------- count the amount of files written in
+                                                progressBar.Text = file + " => " + "ref" + i + @"\" + processorCount;                                   //|-|--|---|----|-----|------|-------|--------|---------- change the progress bars title to reflect which file is being delegated to what file and how much progress has been made
+                                                                                                                                                        //| |  |   |    |     |      |       |        |
+                                                if (fc >= split)                                                                                        //| |  |   |    |     |      |       |        |
+                                                {                                                                                                       //|-|--|---|----|-----|------|-------|--------|---------T if all files delegated
+                                                    break;                                                                                              //|-|--|---|----|-----|------|-------|--------|---------|----------- stop delegating files
+                                                }                                                                                                       //|-|--|---|----|-----|------|-------|--------|---------|e)
+                                                                                                                                                        //| |  |   |    |     |      |       |        |
+                                            }                                                                                                           //|-|--|---|----|-----|------|-------|--------|L)
+                                            stream[i - 1].Close();                                                                                      //|-|--|---|----|-----|------|-------|--------- close the streams
+                                            progressBar.progressBar1.Value = i;                                                                         //|-|--|---|----|-----|------|-------|--------- itterate the progress bar
+                                            fc = 0;                                                                                                     //|-|--|---|----|-----|------|-------|--------- reset the file count
+                                        }                                                                                                               //|-|--|---|----|-----|------|-------|e)
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        isOpen = Application.OpenForms["progress"];                                                                     //|-|--|---|----|-----|------|-------- get if the progress window is still open
+                                        if (isOpen != null) { isOpen.Close(); }                                                                         //|-|--|---|----|-----|------|-------Te) if it is then close it
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        ThreadProgressBar.Visible = true;                                                                               //|-|--|---|----|-----|------|-------- make the thread progress bar visible
+                                        selectedPath = fsd.FileName;                                                                                    //|-|--|---|----|-----|------|-------- set the currently selected path to this routs selected path
+                                        ThreadProgressBar.Maximum = AFa.Count();                                                                        //|-|--|---|----|-----|------|-------- set the thread progress bar's maximum to the amount of files there are
+                                        backgroundThread.RunWorkerAsync();                                                                              //|-|--|---|----|-----|------|-------- start multi-threading (go to backgroundWorker1_DoWork())
+                                                                                                                                                        //| |  |   |    |     |      |
+                                    }                                                                                                                   //|-|--|---|----|-----|------|e)
+                                    if (RTC == 0) { RTC = 1; }                                                                                          //|-|--|---|----|-----|------- Report succesfull run
+                                                                                                                                                        //| |  |   |    |     |
+                                }                                                                                                                       //|-|--|---|----|-----|e)if the dialog box returns "No" of final chech; END.
+                                                                                                                                                        //| |  |   |    |
+                            } else {                                                                                                                    //|-|--|---|----\c) otherwise if test case fails (testValid is false)
+                                MessageBox.Show("One or more files start with \"TMPRN\" which is a reserved name," +                                    //| |  |   |    |
+                                    " please rename these files to anything else.");                                                                    //|-|--|---|----|------ warn the user that a file is named with a resevered namespace
+                                BtnMassRename.Enabled = true;                                                                                           //|-|--|---|----|------ re-enable the mass rename button
+                                PreferencesTSMI.Enabled = true;                                                                                         //|-|--|---|----|------ re-enable the File>Preferences TSMI
+                                active = false;                                                                                                         //|-|--|---|----|------ set that the program is no longer mass renaming
+                                textAfterNumTxtBx.Text = "Text after number (optional)";                                                                //|-|--|---|----|------ reset the text in the textAfterNumTxtBx
+                            }                                                                                                                           //|-|--|---|----|e)
+                        } else {                                                                                                                        //|-|--|---\c) if the dialog box returns "No" of target file check
+                            if (!DW)                                                                                                                    //| |  |   |
+                            {                                                                                                                           //|-|--|---|----T if the warnings are NOT disabled
+                                MessageBox.Show("To sort the files selected, right click on the dialog and use the 'sort by' option",                   //| |  |   |    |
+                                        "Reminder!");                                                                                                   //|-|--|---|----|------ Remind the user how to sort in this circumstance
+                            }                                                                                                                           //|-|--|---|----|e)
+                                                                                                                                                        //| |  |   |
+                            openFileDialog1.InitialDirectory = fsd.FileName;                                                                            //|-|--|---|----- open the same directory
+                            DialogResult dlgr = openFileDialog1.ShowDialog();                                                                           //|-|--|---|----- show the file selecter dialog
+                            openFileDialog1.Title = "Select all files to rename";                                                                       //|-|--|---|----- change the title of the dialog to signify multi-select is active
+                                                                                                                                                        //| |  |   |
+                            if (dlgr == DialogResult.OK)                                                                                                //| |  |   |
+                            {                                                                                                                           //|-|--|---|----T if the return from the dialog is "OK" of the file selecter
+                                firstFileName = null;                                                                                                   //|-|--|---|----|------ reset the first gotten file in case the files have changed or a new folder is selected
+                                                                                                                                                        //| |  |   |    |
+                                while (firstFileName == null)                                                                                           //| |  |   |    |
+                                {                                                                                                                       //|-|--|---|----|-----T (loop) while the first file is not gotten
+                                    firstFileName = openFileDialog1.FileName;                                                                           //|-|--|---|----|-----|------- wait untill the dialog box is closed
+                                                                                                                                                        //| |  |   |    |     |       note: unlike the above route, this returns the full directory
+                                    if (firstFileName == null)                                                                                          //| |  |   |    |     |
+                                    {                                                                                                                   //|-|--|---|----|-----|------T if the first file is still not avalible
+                                        DialogResult bgr = MessageBox.Show("could not get file, try again...", "Could not find the selected file!",     //| |  |   |    |     |      |
+                                            MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);                                                    //|-|--|---|----|-----|------|-------- tell the user the file might not exist (message box)
+                                                                                                                                                        //| |  |   |    |     |      |
+                                        if (bgr == DialogResult.Cancel)                                                                                 //| |  |   |    |     |      |
+                                        {                                                                                                               //|-|--|---|----|-----|------|-------T if the user decides it's not going to work (presses cancel)
+                                            BtnMassRename.Enabled = true;                                                                               //|-|--|---|----|-----|------|-------|--------- re-enable the mass rename button
+                                            PreferencesTSMI.Enabled = true;                                                                             //|-|--|---|----|-----|------|-------|--------- re-enable the File>Preferences TSMI
+                                            Close();                                                                                                    //|-|--|---|----|-----|------|-------|--------- brake out of the loop
+                                                                                                                                                        //| |  |   |    |     |      |       |
+                                        }                                                                                                               //|-|--|---|----|-----|------|-------|e)
+                                                                                                                                                        //| |  |   |    |     |      |
+                                    }                                                                                                                   //|-|--|---|----|-----|------|e) force loop as file is still invalid
+                                                                                                                                                        //| |  |   |    |     |    
+                                }                                                                                                                       //|-|--|---|----|-----|W)file found
+                                                                                                                                                        //| |  |   |    |
+                                bool testValid = true;                                                                                                  //|-|--|---|----|------ store a variable (testValid) defining if this test case occurs:
+                                foreach (string testFile in openFileDialog1.SafeFileNames)                                                              //| |  |   |    |
+                                {                                                                                                                       //|-|--|---|----|-----T loop for every file selected
+                                    if (testFile.StartsWith("TMPRN"))                                                                                   //| |  |   |    |     |
+                                    {                                                                                                                   //|-|--|---|----|-----|------T if the current file to test starts with "TMPRN"
+                                        testValid = false;                                                                                              //|-|--|---|----|-----|------|-------- set test case as failed (testValid as false)
+                                    }                                                                                                                   //|-|--|---|----|-----|------|e) (implied: otherwise keep testValid as true)
+                                }                                                                                                                       //|-|--|---|----|-----|L)
+                                                                                                                                                        //| |  |   |    |
+                                if (testValid)                                                                                                          //| |  |   |    |
+                                {                                                                                                                       //|-|--|---|----|-----T if test case succeeded (testValid is true)
+                                    if (!DW)                                                                                                            //| |  |   |    |     |
+                                    {                                                                                                                   //|-|--|---|----|-----|-----T if the warnings are NOT disabled
+                                        result = MessageBox.Show("Are you ABSOLUTELY sure?", "Last chance bukko!", MessageBoxButtons.YesNo,             //| |  |   |    |     |     |
+                                        MessageBoxIcon.Question);                                                                                       //|-|--|---|----|-----|-----|------- Preforme a final chech with the user (message box)
+                                    }                                                                                                                   //| |  |   |    |     |     |
+                                    else { result = DialogResult.Yes; }                                                                                 //|-|--|---|----|-----|-----\c)e)otherwise set the result to "Yes"
+                                                                                                                                                        //| |  |   |    |     |
+                                    if (result == DialogResult.Yes)                                                                                     //| |  |   |    |     |
+                                    {                                                                                                                   //|-|--|---|----|-----|-----Tif the dialog box returns "Yes" of the final check
+                                        length = openFileDialog1.FileNames.Length;                                                                      //|-|--|---|----|-----|-----|------- reset 'length' to the amount of files selected
+                                                                                                                                                        //| |  |   |    |     |     |
+                                        if (!randomSTBtn.Checked)                                                                                       //| |  |   |    |     |     |
+                                        {                                                                                                               //|-|--|---|----|-----|-----|------T if not randomizing
+                                            progress progressBar = new progress();                                                                      //|-|--|---|----|-----|-----|------|-------- create a new other-form progress bar
+                                            Form isOpen = Application.OpenForms["progress"];                                                            //|-|--|---|----|-----|-----|------|-------- get if another window of this is still open (incase an error occured and this was never closed )
+                                            if (isOpen != null) { isOpen.Close(); }                                                                     //|-|--|---|----|-----|-----|------|-------Te) if it is then close it
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            progressBar.Show();                                                                                         //|-|--|---|----|-----|-----|------|-------- show the progress bar
+                                            progressBar.progressBar1.Maximum = processorCount;                                                          //|-|--|---|----|-----|-----|------|-------- set the maxiumum to the aproximate amount of files
+                                            progressBar.Text = "Getting files to rename...";                                                            //|-|--|---|----|-----|-----|------|-------- change the title of the progress bar to "Getting files to rename..."
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            split = int.Parse(Math.Ceiling((double)length / processorCount).ToString());                                //|-|--|---|----|-----|-----|------|-------- get the amount of files each thread will operate on (rounded up) [variable name: split]
+                                            int fc = 0;                                                                                                 //|-|--|---|----|-----|-----|------|-------- prepare to cound the amount of file names written to the ref files
+                                            StreamWriter[] stream = new StreamWriter[processorCount];                                                   //|-|--|---|----|-----|-----|------|-------- prepare to write to files
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            threadProgress = new string[processorCount * split];                                                        //|-|--|---|----|-----|-----|------|-------- reset threadProgress[]
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            for (uint pi = 0; pi < processorCount; pi++)                                                                //| |  |   |    |     |     |      |
+                                            {                                                                                                           //| |  |   |    |     |     |      |
+                                                threadProgress[pi] = "";                                                                                //| |  |   |    |     |     |      |
+                                            }                                                                                                           //| |  |   |    |     |     |      |
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            for (int i = 1; i <= processorCount; i++)                                                                   //| |  |   |    |     |     |      |
+                                            {                                                                                                           //|-|--|---|----|-----|-----|------|-------T loop for the amount of processors avalible to use starting from i=1
+                                                stream[i - 1] = File.CreateText(path + @"\ref" + i + ".txt");                                           //|-|--|---|----|-----|-----|------|-------|--------- create a reference file for the thread to reffer to when getting which files to rename
+                                                stream[i - 1].AutoFlush = true;                                                                         //|-|--|---|----|-----|-----|------|-------|--------- write buffer to file after each WriteLine() function call
+                                                                                                                                                        //| |  |   |    |     |     |      |       |
+                                                foreach (string file in openFileDialog1.SafeFileNames.Skip(split * (i - 1)))                            //| |  |   |    |     |     |      |       |
+                                                {                                                                                                       //|-|--|---|----|-----|-----|------|-------|--------T (loop) get each file, skipping the files that area already delegated
+                                                    stream[i - 1].WriteLine(file);                                                                      //|-|--|---|----|-----|-----|------|-------|--------|---------- write the reference file to the file 
+                                                    fc++;                                                                                               //|-|--|---|----|-----|-----|------|-------|--------|---------- count the amount of files written in
+                                                    progressBar.Text = file + " => " + "ref" + i + @"\" + processorCount;                               //|-|--|---|----|-----|-----|------|-------|--------|---------- change the progress bars title to reflect which file is being delegated to what file and how much progress has been made
+                                                                                                                                                        //| |  |   |    |     |     |      |       |        |
+                                                    if (fc >= split)                                                                                    //| |  |   |    |     |     |      |       |        |
+                                                    {                                                                                                   //|-|--|---|----|-----|-----|------|-------|--------|---------T if all files delegated
+                                                        break;                                                                                          //|-|--|---|----|-----|-----|------|-------|--------|---------|----------- stop delegating files
+                                                    }                                                                                                   //|-|--|---|----|-----|-----|------|-------|--------|---------|e)
+                                                                                                                                                        //| |  |   |    |     |     |      |       |        |
+                                                }                                                                                                       //|-|--|---|----|-----|-----|------|-------|--------|L)
+                                                stream[i - 1].Close();                                                                                  //|-|--|---|----|-----|-----|------|-------|--------- close the streams
+                                                progressBar.progressBar1.Value = i;                                                                     //|-|--|---|----|-----|-----|------|-------|--------- itterate the progress bar
+                                                fc = 0;                                                                                                 //|-|--|---|----|-----|-----|------|-------|--------- reset the file count
+                                            }                                                                                                           //|-|--|---|----|-----|-----|------|-------|e)
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            isOpen = Application.OpenForms["progress"];                                                                 //|-|--|---|----|-----|-----|------|-------- get if the progress window is still open
+                                            if (isOpen != null) { isOpen.Close(); }                                                                     //|-|--|---|----|-----|-----|------|-------Te) if it is then close it
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            ThreadProgressBar.Visible = true;                                                                           //|-|--|---|----|-----|-----|------|-------- make the thread progress bar visible
+                                            selectedPath = firstFileName.Replace(openFileDialog1.SafeFileName, "");                                     //|-|--|---|----|-----|-----|------|-------- set the currently selected path to this routes selected file path (- the file)
+                                            selectedPath = selectedPath.Remove(selectedPath.Length - 1);                                                //|-|--|---|----|-----|-----|------|-------- set the currently selected path to this routes selected path (- the \ at the end)
+                                            ThreadProgressBar.Maximum = openFileDialog1.SafeFileNames.Count();                                          //|-|--|---|----|-----|-----|------|-------- set the thread progress bar's maximum to the amount of files there are
+                                            backgroundThread.RunWorkerAsync();                                                                          //|-|--|---|----|-----|-----|------|-------- start multi-threading (go to backgroundWorker1_DoWork())
+                                        } else {                                                                                                        //|-|--|---|----|-----|-----|------\c) otherwise if randomised
+                                            Random ran = new Random();                                                                                  //|-|--|---|----|-----|-----|------|-------- generate a random...thing
+                                            AFa = openFileDialog1.SafeFileNames.Select(f => f).OrderBy(f => ran.Next()).ToArray();                      //|-|--|---|----|-----|-----|------|-------- randomise the order of the selected files
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            progress progressBar = new progress();                                                                      //|-|--|---|----|-----|-----|------|-------- create a new other-form progress bar
+                                            Form isOpen = Application.OpenForms["progress"];                                                            //|-|--|---|----|-----|-----|------|-------- get if another window of this is still open (incase an error occured and this was never closed )
+                                            if (isOpen != null) { isOpen.Close(); }                                                                     //|-|--|---|----|-----|-----|------|-------Te) if it is then close it
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            progressBar.Show();                                                                                         //|-|--|---|----|-----|-----|------|-------- show the progress bar
+                                            progressBar.progressBar1.Maximum = processorCount;                                                          //|-|--|---|----|-----|-----|------|-------- set the maxiumum to the aproximate amount of files
+                                            progressBar.Text = "Getting files to rename...";                                                            //|-|--|---|----|-----|-----|------|-------- change the title of the progress bar to "Getting files to rename..."
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            split = int.Parse(Math.Ceiling((double)length / processorCount).ToString());                                //|-|--|---|----|-----|-----|------|-------- get the amount of files each thread will operate on (rounded up) [variable name: split]
+                                            int fc = 0;                                                                                                 //|-|--|---|----|-----|-----|------|-------- prepare to cound the amount of file names written to the ref files
+                                            StreamWriter[] stream = new StreamWriter[processorCount];                                                   //|-|--|---|----|-----|-----|------|-------- prepare to write to files
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            threadProgress = new string[processorCount * split];                                                        //|-|--|---|----|-----|-----|------|-------- reset threadProgress[]
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            for (uint pi = 0; pi < processorCount; pi++)                                                                //| |  |   |    |     |     |      |
+                                            {                                                                                                           //| |  |   |    |     |     |      |
+                                                threadProgress[pi] = "";                                                                                //| |  |   |    |     |     |      |
+                                            }                                                                                                           //| |  |   |    |     |     |      |
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            for (int i = 1; i <= processorCount; i++)                                                                   //| |  |   |    |     |     |      |
+                                            {                                                                                                           //|-|--|---|----|-----|-----|------|-------T loop for the amount of processors avalible to use starting from i=1
+                                                stream[i - 1] = File.CreateText(path + @"\ref" + i + ".txt");                                           //|-|--|---|----|-----|-----|------|-------|--------- create a reference file for the thread to reffer to when getting which files to rename
+                                                stream[i - 1].AutoFlush = true;                                                                         //|-|--|---|----|-----|-----|------|-------|--------- write buffer to file after each WriteLine() function call
+                                                                                                                                                        //| |  |   |    |     |     |      |       |
+                                                foreach (string file in AFa.Skip(split * (i - 1)))                                                      //| |  |   |    |     |     |      |       |     
+                                                {                                                                                                       //|-|--|---|----|-----|-----|------|-------|--------T (loop) get each file, skipping the files that area already delegated
+                                                    stream[i - 1].WriteLine(file);                                                                      //|-|--|---|----|-----|-----|------|-------|--------|---------- write the reference file to the file 
+                                                    fc++;                                                                                               //|-|--|---|----|-----|-----|------|-------|--------|---------- count the amount of files written in
+                                                    progressBar.Text = file + " => " + "ref" + i + @"\" + processorCount;                               //|-|--|---|----|-----|-----|------|-------|--------|---------- change the progress bars title to reflect which file is being delegated to what file and how much progress has been made
+                                                                                                                                                        //| |  |   |    |     |     |      |       |        |
+                                                    if (fc >= split)                                                                                    //| |  |   |    |     |     |      |       |        |
+                                                    {                                                                                                   //|-|--|---|----|-----|-----|------|-------|--------|---------T if all files delegated
+                                                        break;                                                                                          //|-|--|---|----|-----|-----|------|-------|--------|---------|----------- stop delegating files
+                                                    }                                                                                                   //|-|--|---|----|-----|-----|------|-------|--------|---------|e)
+                                                                                                                                                        //| |  |   |    |     |     |      |       |        |
+                                                }                                                                                                       //|-|--|---|----|-----|-----|------|-------|--------|L)
+                                                stream[i - 1].Close();                                                                                  //|-|--|---|----|-----|-----|------|-------|--------- close the streams
+                                                progressBar.progressBar1.Value = i;                                                                     //|-|--|---|----|-----|-----|------|-------|--------- itterate the progress bar
+                                                fc = 0;                                                                                                 //|-|--|---|----|-----|-----|------|-------|--------- reset the file count
+                                            }                                                                                                           //|-|--|---|----|-----|-----|------|-------|e)
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            isOpen = Application.OpenForms["progress"];                                                                 //|-|--|---|----|-----|-----|------|-------- get if the progress window is still open
+                                            if (isOpen != null) { isOpen.Close(); }                                                                     //|-|--|---|----|-----|-----|------|-------Te) if it is then close it
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                            ThreadProgressBar.Visible = true;                                                                           //|-|--|---|----|-----|-----|------|-------- make the thread progress bar visible
+                                            selectedPath = firstFileName.Replace(openFileDialog1.SafeFileName, "");                                     //|-|--|---|----|-----|-----|------|-------- set the currently selected path to this routes selected file path (- the file)
+                                            selectedPath = selectedPath.Remove(selectedPath.Length - 1);                                                //|-|--|---|----|-----|-----|------|-------- set the currently selected path to this routes selected path (- the \ at the end)
+                                            ThreadProgressBar.Maximum = AFa.Count();                                                                    //|-|--|---|----|-----|-----|------|-------- set the thread progress bar's maximum to the amount of files there are
+                                            backgroundThread.RunWorkerAsync();                                                                          //|-|--|---|----|-----|-----|------|-------- start multi-threading (go to backgroundWorker1_DoWork())
+                                                                                                                                                        //| |  |   |    |     |     |      |
+                                        }                                                                                                               //|-|--|---|----|-----|-----|------|e)
+                                        if (RTC == 0) { RTC = 1; }                                                                                      //|-|--|---|----|-----|-----|------- Report succesfull run
+                                                                                                                                                        //| |  |   |    |     |     |
+                                    }                                                                                                                   //|-|--|---|----|-----|-----|e)
+                                } else {                                                                                                                //|-|--|---|----|-----\c) otherwise if test case is false (testValid is false)
+                                    MessageBox.Show("One or more files start with \"TMPRN\" which is a reserved name," +                                //| |  |   |    |     |
+                                        " please rename these files to anything else.");                                                                //|-|--|---|----|-----|------ warn the user that a file is named with a resevered namespace
+                                    BtnMassRename.Enabled = true;                                                                                       //|-|--|---|----|-----|------ re-enable the mass rename button
+                                    PreferencesTSMI.Enabled = true;                                                                                     //|-|--|---|----|-----|------ re-enable the File>Preferences TSMI
+                                    active = false;                                                                                                     //|-|--|---|----|-----|------ set that the program is no longer mass renaming
+                                    textAfterNumTxtBx.Text = "Text after number (optional)";                                                            //|-|--|---|----|-----|------ reset the text in the textAfterNumTxtBx
+                                }                                                                                                                       //|-|--|---|----|-----|e)
+                            } else {                                                                                                                    //|-|--|---|----\c) otherwise if the user cancled file selection dialog (mutli-select)
+                                RTC = 2;                                                                                                                //|-|--|---|----|------ Report a minor error occured
+                                BtnMassRename.Enabled = true;                                                                                           //|-|--|---|----|------ re-enable the mass rename button
+                                PreferencesTSMI.Enabled = true;                                                                                         //|-|--|---|----|------ re-enable the File>Preferences TSMI
+                                MessageBox.Show("An error occured or the process was aborted!");                                                        //|-|--|---|----|------ tell them the process failed
+                                                                                                                                                        //|-|--|---|    |
+                            }                                                                                                                           //|-|--|---|----|e)
+                        }                                                                                                                               //|-|--|---|e)
+                    }                                                                                                                                   //|-|--|e)
+                } else {                                                                                                                                //|-\c) if the user cancled file selection dialog (single select)
+                    RTC = 2;                                                                                                                            //|-|--- Report a minor error occured
+                    BtnMassRename.Enabled = true;                                                                                                       //|-|--- re-enable the mass rename button
+                    PreferencesTSMI.Enabled = true;                                                                                                     //|-|--- re-enable the File>Preferences TSMI
+                    MessageBox.Show("An error occured or the process was aborted!");                                                                    //|-|--- Tell them the process failed
+                                                                                                                                                        //|-|
+                }                                                                                                                                       //|-|e)
+            }                                                                                                                                           //|e)
 
         }
 
-        //handle creating the new threads to run and runs holds this thread, stopping the UI from being frozen
+        //handles creating the new threads to run and runs holds this thread, stopping the UI from being frozen
         private void backgroundThread_DoWork(object sender, DoWorkEventArgs e)
         {
-            file = new FileStream[processorCount];
-            ThreadClaimed = new int[processorCount];
-            msg = false;
-
-            workerBlock = new ActionBlock<FolderSelectDialog>(//input type for action/function is the amount of ref files (processorCount)
-                                                              // Simulate work by suspending the current thread.
-            refCount => Thread(fsd, openFileDialog1),
-            // Specify a maximum degree of parallelism.
-            new ExecutionDataflowBlockOptions
-            {
-                MaxDegreeOfParallelism = processorCount
-            });//set number as the amount of processors-1
-
-            for (int i = 0; i < processorCount; i++)
-            {
-                workerBlock.Post(fsd);
-            }
-            workerBlock.Complete();
-
-            workerBlock.Completion.Wait();//wait until all threads complete
-
-            //remove the ref files
-            for (int i = 1; i <= processorCount; i++)
-            {
-                if (file[i - 1] != null)
-                {
-                    file[i - 1].Close();
-                    while (true)
-                    {
-                        try
-                        {
-                            File.Delete(path + @"\ref" + i + ".txt");//delete the ref files
-                            File.Delete(path + @"\ref" + i + "Claimed");//delete the claim files
-                            break;
-                        }
-                        catch
-                        {
-                            file[i - 1].Close();
-                            System.Threading.Thread.Sleep(500);
-                        }
-                    }
-
-                }
-                else
-                {
-                    File.Delete(path + @"\ref" + i + ".txt");//delete the ref files
-                    File.Delete(path + @"\ref" + i + "Claimed");//delete the claim files
-
-                }
-            }
-
-            if (workerBlock.Completion.Exception == null)
-            {
-                errorLogger.QueueLog("", "", 4, true);
-                errorLogger.QueueLog("All threads compeleted successfully without any exceptions!");
-                errorLogger.QueueLog("", "", 4, true);
-
-            }
-
-            workerBlock.Completion.Dispose();//release the threads
-            Array.Resize(ref file, 0);//release the file streams
-            errorLogger.ReleaseQueue(path + @"\log.txt");//release the logs 
-            //active = false;//set active to false
+            file = new FileStream[processorCount];                                                          //- reset and prepare to get a new set of ref files
+            ThreadClaimed = new int[processorCount];                                                        //- reset and prepare to get which thread claimed what file
+            msg = false;                                                                                    //- reset the message blocker
+                                                                                                            //
+            workerBlock = new ActionBlock<FolderSelectDialog>(                                              //T create a block which tracks all the threads created by this block which preform this action:
+            refCount => Thread(fsd, openFileDialog1),                                                       //|-- run thread()
+                                                                                                            //|
+            new ExecutionDataflowBlockOptions                                                               //|with the options:
+            {                                                                                               //|
+                MaxDegreeOfParallelism = processorCount                                                     //|-- Specify a maximum degree of parallelism (how many threads will run) being equal to the amount of avalible processors.
+            });                                                                                             //|e)
+                                                                                                            //
+            for (int i = 0; i < processorCount; i++)                                                        //T loop for amount of processors avalible
+            {                                                                                               //|
+                workerBlock.Post(fsd);                                                                      //|-- create a new thread and feed the thread the info on the folder select dialog (fsd)
+            }                                                                                               //|L)
+            workerBlock.Complete();                                                                         //run all created threads to completion
+            workerBlock.Completion.Wait();                                                                  //wait this thread (kinda) untill all threads created by the block are finished
+                                                                                                            //
+            for (int i = 1; i <= processorCount; i++)                                                       //
+            {                                                                                               //T loop for amount of processors avalible
+                if (file[i - 1] != null)                                                                    //|
+                {                                                                                           //|-T if the array refference to a ref file is not null
+                    file[i - 1].Close();                                                                    //|-|--- close the file
+                                                                                                            //| |
+                    while (true)                                                                            //| |
+                    {                                                                                       //|-|--- loop until break
+                        try                                                                                 //|-|
+                        {                                                                                   //|-|--T try
+                            File.Delete(path + @"\ref" + i + ".txt");                                       //|-|--| delete the ref files
+                            File.Delete(path + @"\ref" + i + "Claimed");                                    //|-|--| delete the claim files
+                            break;                                                                          //|>|>>> break
+                        } catch {                                                                           //|-|--T catch any errors and do:
+                            file[i - 1].Close();                                                            //|-|--|---- try to close the file again
+                            System.Threading.Thread.Sleep(500);                                             //|-|--|---- wait 0.5 seconds for anything that might be using the file like an AV
+                        }                                                                                   //|-|--|e)
+                    }                                                                                       //|-|INF)
+                                                                                                            //|-|
+                } else {                                                                                    //|-|c) otherwise if the array refference to a ref file is
+                    File.Delete(path + @"\ref" + i + ".txt");                                               //|-|delete the ref files
+                    File.Delete(path + @"\ref" + i + "Claimed");                                            //|-|delete the claim files
+                                                                                                            //|-|
+                }                                                                                           //|-|e)
+            }                                                                                               //|L)
+                                                                                                            //
+            if (workerBlock.Completion.Exception == null && file.All(item => item != null))                 //
+            {                                                                                               //T if the worker finished without any exceptions and all items of file are not null
+                errorLogger.QueueLog("", "", 4, true);                                                      //|
+                errorLogger.QueueLog("All threads compeleted successfully without any exceptions!");        //|-- log that everything worked fine
+                errorLogger.QueueLog("", "", 4, true);                                                      //|
+                                                                                                            //|
+            }                                                                                               //|e)
+                                                                                                            //
+            workerBlock.Completion.Dispose();                                                               //- release the threads
+            Array.Resize(ref file, 0);                                                                      //- release the file streams
+            errorLogger.ReleaseQueue(path + @"\log.txt");                                                   //- release the logs 
 
         }
 
         //the set of instructions each thread will run (the renmaing process)
         private void Thread(FolderSelectDialog fsd, OpenFileDialog openFileDialog1)
         {
+            //logging
             ErrorLogger threadErrorLogger = new ErrorLogger();
             threadErrorLogger.QueueLog("", "", 4, true);
             threadErrorLogger.QueueLog("INFO: Running thread " + System.Threading.Thread.CurrentThread.ManagedThreadId);
 
-            //System.Threading.Thread.Sleep(sleepTimer);//wait 10 * random miliseconds so that each thread starts at a different point (wont try to access the same file all at the same time)
             if (System.Threading.Thread.CurrentThread.IsBackground)
-            {
-                Monitor.Enter(claimLocker);
-
-            }
-            int claimed = -1;
-            int breakout = 1000 * processorCount;
-
-            if (processorCount > 1)
-            {
-                while (claimed == -1)
-                {
-                    for (int i = 0; i < processorCount; i++)
-                    {
-
-                        if (!File.Exists(path + @"\ref" + (i + 1) + "Claimed") && file[i] == null)
-                        {
-
-                            if (!threadErrorLogger.IsFileLocked(new FileInfo(path + @"\ref" + (i + 1) + ".txt")))
-                            {
-                                try
-                                {
-                                    if (file[i] == null)
-                                    {
-                                        File.Create(path + @"\ref" + (i + 1) + "Claimed").Close();
-                                        using (file[i] = new FileInfo(path + @"\ref" + (i + 1) + ".txt").OpenRead()) { }//try to open a read, if fails then dont set file[i] as object
-                                        claimed = i + 1;
-                                        Debug.WriteLine("Thread " + System.Threading.Thread.CurrentThread.ManagedThreadId + " claimed ref" + claimed + ".");
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        Debug.WriteLine("Thread " + System.Threading.Thread.CurrentThread.ManagedThreadId + " failed to claim ref" + claimed + " as the file was not null.");
-                                        claimed = -1;
-                                    }
-                                }
-                                catch
-                                {
-                                    if (file[i] != null)
-                                    {
-                                        file[i].Close();
-                                    }
-                                    file[i] = null;
-                                    claimed = -1;
-                                    Debug.WriteLine("Thread " + System.Threading.Thread.CurrentThread.ManagedThreadId + " failed to claim ref" + i + " as the file was in use or no longer existed.");
-
-                                }
-                            }
-                            else
-                            {
-                                Debug.WriteLine("Thread " + System.Threading.Thread.CurrentThread.ManagedThreadId + " failed to claimed ref" + (i + 1) + " as the file was in use.");
-                                System.Threading.Thread.Sleep(100);
-                                i--;
-                            }
-
-                        }
-                    }
-
-                    if (breakout == 0)
-                    {
-                        Debug.WriteLine("CTITICAL ERROR OCCURED - CLAIMING BREAKOUT");
-                        MessageBox.Show("A critical error occured during multi-threading setup and will be aborted to preserve data integrity, a log has been saved to:\n"
-                            + path + @"\log.txt\nPlease report the log to the issues page on the branches' 'issues' page.", "Critical error: CLAIMING BREAKOUT"
-                            , MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                        threadErrorLogger.QueueLog("ERROR: A critical error occured during multi-threading setup - CLAIMING BREAKOUT.");
-                        break;
-                    }
-                    else
-                    {
-                        breakout--;
-                    }
-
-                }
-
-                Debug.WriteLine("Thread " + System.Threading.Thread.CurrentThread.ManagedThreadId + " claimed ref" + claimed + ".");
-                threadErrorLogger.QueueLog("Thread " + System.Threading.Thread.CurrentThread.ManagedThreadId + " claimed ref" + claimed + ".");
-                ThreadClaimed[claimed - 1] = System.Threading.Thread.CurrentThread.ManagedThreadId;//get which thread claimed which ref
-
-                //System.Threading.Thread.Sleep(300);//wait for all threads to finish claiming
-                Monitor.Exit(claimLocker);
-                reSync[claimed - 1] = true;
-                SpinWait.SpinUntil(delegate () { return reSync.All(item => item.Equals(true)); });//wait untill all threads reach this point
-
-                //Monitor.Wait(claimLocker2);
-                int ci = 0;
-
-                //for debugging
-                //if (file[0] != null)
-                //{
-                //    file[0].Close();
-                //    file[0] = null;
-                //}
-
-                if (!msg)
-                {
-                    foreach (FileStream state in file)
-                    {
-                        if (state == null && ci != claimed - 1)
-                        {
-                            Debug.WriteLine("CTITICAL ERROR OCCURED - NULL CLAIMING");
-                            threadErrorLogger.QueueLog("ERROR: A critical error occured during multi-threading setup - NULL CLAIMING. A ref file was not claimed.");
-                            threadErrorLogger.ReleaseQueue(path + @"\log.txt");
-
-                            MessageBox.Show("A critical error occured during multi-threading setup and will be aborted to preserve data integrity, a log has been saved to:\n"
-                        + path + @"\log.txt"
-                        + "\nPlease report the log to the issues page on the relevent branch. (" + this.Name + ")", "Critical error: NULL FILE REF"
-                        , MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                            ci = -1;
-                            msg = true;
-                            break;
-
-                        }
-                        ci++;
-
-                    }
-                }
-
-                if (ci == -1)
-                {
-                    if (file[claimed - 1] == null)
-                    {
-                        Debug.WriteLine("CTITICAL ERROR OCCURED - NULL CLAIMING");
-                        threadErrorLogger.QueueLog("ERROR: A critical error occured during multi-threading setup - NULL CLAIMING. Thread "
-                            + System.Threading.Thread.CurrentThread.ManagedThreadId + " failed to claim ref" + (claimed - 1));
-
-                    }
-                }
-                else
-                {//if no other thread has failed to claim a file
-
-                    if (file[claimed - 1] == null)
-                    {
-                        Debug.WriteLine("CTITICAL ERROR OCCURED - NULL CLAIMING");
-                        threadErrorLogger.QueueLog("ERROR: A critical error occured during multi-threading setup - NULL CLAIMING. Thread "
-                            + System.Threading.Thread.CurrentThread.ManagedThreadId + " failed to claim ref" + (claimed - 1));
-
-                    }
-                    else
-                    {//and this thread has not failed to claim a file
-                        int sleepTimer = 100 * claimed;
-                        System.Threading.Thread.Sleep(sleepTimer);//wait 10 * random miliseconds so that each thread starts at a different point (wont try to access the same file all at the same time)
-                        IEnumerable<string> addT = null;
-                        string text = fileRenameTxtBx.Text;                                                           //get the user inputted text
-                        string ext = "";
-                        StreamReader stream = File.OpenText(file[claimed - 1].Name);                                      //- open the text file's stream
-                        string[] tmpa = new string[split];
-                        int ai = 0;
-                        int li = 0;
-
-                        while (!stream.EndOfStream)
-                        {
-                            tmpa[ai] = stream.ReadLine();
-                            ai++;
-
-                        }
-                        stream.Close();
-                        file[claimed - 1].Close();
-
-                        if (alphabeticalTSMI.Checked)                                                                                       //|-|---|---|---|---Tif the user has defined to use alphabetical ordering type
-                        {
-                            int splitChar = int.Parse("A") + ((claimed * split) - 1);
-                            addT = Splitter.GetAdditionType(0, splitChar.ToString(), (claimed - 1) * split);
-
-                        }                                                                        //|-|---|---|---|---|----get the addition type of 0 (aplhab) with a limit to character "Z"
-                        else if (numericaldTSMI.Checked)                                                                                    //|-|---|---|---|---\c)otherwise if the user had defined to use alphanumerical ordering type
-                        { addT = Splitter.GetAdditionType(1, (split * claimed).ToString(), ((claimed - 1) * split) + 1); }                                                          //|-|---|---|---|---|----get the addition type of 0 (aplhan) with a limit of the same length as the amount of items selected
-                        else if (customTSMI.Checked)                                                                                        //|-|---|---|---|---\c)otherwise if the user had defined to use an custom ordering type
-                        { }                                                                                                                 //|-|---|---|---|---|e)--WIP
-
-                        bool failedClaim = false;
-                        foreach (FileStream state in file)
-                        {
-                            if (state == null)
-                            {
-                                failedClaim = true;
-                            }
-
-                        }
-
-                        if (!failedClaim)
-                        {//tripple check all files where claimed correctly
-                            foreach (string add in addT)
-                            {                                                                                  //|-|---|---|---|---|---Tnew foreach loop where the enumerable is enumerated and the resultant variable is "add"
-                                                                                                               //| |   |   |   |   |   |
-                                string firstFileName = tmpa[li];                                                               //|-|---|---|---|---|---|----get the selected file
-                                if (firstFileName == null)
-                                {
-                                    break;
-                                }
-                                string test = firstFileName.Split(Convert.ToChar(92)).Last();
-
-                                if (fileRenameTxtBx.Text.Length != 0 && (fileRenameTxtBx.Text == "What to rename the file to"               //| |   |   |   |   |   |
-                                && fileRenameTxtBx.Text == "You may not rename files while sorting is disabled"))                           //| |   |   |   |   |   |
-                                {                                                                                                           //|-|---|---|---|---|---|---Tif the user has NOT defined an new name for the files to be renamed to
-                                    text = firstFileName;                                                                                   //|-|---|---|---|---|---|---|----set name to rename to, to its own name
-                                }                                                                                                           //|-|---|---|---|---|---|---|e)
-                                                                                                                                            //| |   |   |   |   |   |
-                                if (extentionTxtBx.Text.Length > 0 && (extentionTxtBx.Text != "Extention (optional)"                        //| |   |   |   |   |   |
-                                && extentionTxtBx.Text != "Extention"))                                                                     //| |   |   |   |   |   |
-                                {                                                                                                           //|-|---|---|---|---|---|---Tif the user has defined an extention
-                                    ext = "." + extentionTxtBx.Text;                                                                        //|-|---|---|---|---|---|---|---set the extention to the user defined type
-                                }
-                                else
-                                {                                                                                                    //|-|---|---|---|---|---|---\c)otherwise if non defined
-                                    ext = Path.GetExtension(firstFileName);                                           //|-|---|---|---|---|---|---|---get the current files extention
-                                }                                                                                                           //|-|---|---|---|---|---|---|e)
-
-                                if (test != text + add + textAfterNumTxtBx.Text + ext)
-                                {//if the item to rename isn't already in the correct possition
-
-                                    //if a conflict occures,
-                                    if (File.Exists(fsd.FileName + @"\" + text + add + textAfterNumTxtBx.Text + ext))
-                                    {
-                                        int tmpi = 0;//get the file's possition in the array
-
-                                        foreach (string item in tmpa)
-                                        {
-                                            if (item == text + add + textAfterNumTxtBx.Text + ext)
-                                            {
-                                                break;
-                                            }
-                                            tmpi++;
-
-                                        }
-
-                                        if (tmpi == tmpa.Length)
-                                        {
-                                            try
-                                            {
-                                                if (System.Threading.Thread.CurrentThread.IsBackground)
-                                                {
-                                                    Monitor.Enter(locker);
-
-                                                }
-
-                                                bool tmp = File.Exists(fsd.FileName + @"\" + text + add + textAfterNumTxtBx.Text + ext);
-                                                if (File.Exists(fsd.FileName + @"\" + text + add + textAfterNumTxtBx.Text + ext))
-                                                {
-                                                    Array.Resize(ref renamedFrom, renamedFrom.Length + 1);
-                                                    Array.Resize(ref renamedTo, renamedTo.Length + 1);
-                                                    renamedFrom[renamedFrom.Length - 1] = text + add + textAfterNumTxtBx.Text + ext;
-                                                    renamedTo[renamedTo.Length - 1] = "TMPRN" + tmpc + ext;
-
-                                                    Microsoft.VisualBasic.FileIO.FileSystem.RenameFile(fsd.FileName + @"\"
-                                                        + text + add + textAfterNumTxtBx.Text + ext, "TMPRN" + tmpc + ext);                                                             //|-|---|---|---|---|---|----rename the file
-                                                    threadErrorLogger.QueueLog("INFO: Temporarily renamed " + text + add + textAfterNumTxtBx.Text + ext + " to TMPRN" + tmpc + ext);
-                                                    threadProgress[((processorCount * claimed) - 1) + li] = "TMPRN" + tmpc + ext;
-                                                    //tmpa[tmpi] = "TMPRN" + tmpc + ext;
-                                                    tmpc++;
-                                                }
-                                                System.Threading.Monitor.Exit(locker);
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                if (e.InnerException is FileNotFoundException || e.HResult == -2147024894)
-                                                {//if conflict has been self solved by the other thread then just continue on normally
-                                                }
-                                                else
-                                                {
-                                                    threadErrorLogger.QueueLog("CRIT: AN ERROR OCCURED DURING THE RENAMING PROCESS AND WAS ABORTED! " +
-                                                    "FAILED TO FIND THE FILE TO TEMPORARILY RENAME. " + text.ToUpper() + add.ToUpper()
-                                                    + textAfterNumTxtBx.Text.ToUpper() + ext.ToUpper() + " EXISTS BUT THE REFERENCE IS MISSING. " +
-                                                    "ANOTHER THREAD MAY HAVE THE REFERENCE.\nEXITING!");
-                                                    //errorLogger.AppendQueue(threadErrorLogger.GetQueue());
-                                                    //errorLogger.ReleaseQueue(path + @"\log.txt", true, true);
-
-                                                    //include opening "recover me" program here to clean up files and attempt to 'undo' the renaming process
-                                                    //something like https://stackoverflow.com/questions/3173775/how-to-run-external-program-via-a-c-sharp-program
-                                                    //Process.Start
-
-                                                    Invoke(new Action(() =>
-                                                    {
-                                                        errorLogger.AppendQueue(threadErrorLogger.GetQueue());
-                                                        errorLogger.ReleaseQueue(path + @"\log.txt", true, true);
-                                                        Environment.Exit(Environment.ExitCode);
-                                                    }));
-                                                }
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            if (System.Threading.Thread.CurrentThread.IsBackground)
-                                            {
-                                                Monitor.Enter(locker);
-
-                                            }
-                                            if (File.Exists(fsd.FileName + @"\" + text + add + textAfterNumTxtBx.Text + ext))
-                                            {//check again if the file exists as the threads are being delayed by the monitor
-                                                try
-                                                {//try to rename the file
-                                                    Microsoft.VisualBasic.FileIO.FileSystem.RenameFile(fsd.FileName + @"\"
-                                                    + text + add + textAfterNumTxtBx.Text + ext, "TMPRN" + tmpc + ext);                                                             //|-|---|---|---|---|---|----rename the file
-                                                    threadErrorLogger.QueueLog("INFO: Temporarily renamed " + text + add + textAfterNumTxtBx.Text + ext + " to TMPRN" + tmpc + ext);
-                                                    threadProgress[((processorCount * claimed) - 1) + li] = "TMPRN" + tmpc + ext;
-                                                    tmpa[tmpi] = "TMPRN" + tmpc + ext;
-                                                    tmpc++;
-                                                }
-                                                catch (Exception e)
-                                                {
-                                                    if (e.InnerException is FileNotFoundException)
-                                                    { }
-                                                    else
-                                                    {
-                                                        threadErrorLogger.QueueLog("CRIT: AN UNKNOWN ERROR OCCURED DURING THE RENAMING PROCESS AND WAS ABORTED! MESSAGE: " + e.Message.ToUpper());
-                                                        errorLogger.AppendQueue(threadErrorLogger.GetQueue());
-                                                        errorLogger.ReleaseQueue(path + @"\log.txt", true, true);
-                                                        //threadErrorLogger.ReleaseQueue(path + @"\log.txt", true, true);
-
-                                                        //include opening "recover me" program here to clean up files and attempt to 'undo' the renaming process
-                                                        //something like https://stackoverflow.com/questions/3173775/how-to-run-external-program-via-a-c-sharp-program
-                                                        //Process.Start
-
-                                                        Invoke(new Action(() =>
-                                                        {
-                                                            Environment.Exit(Environment.ExitCode);
-                                                        }));
-                                                    }
-
-                                                }
-                                            }
-                                            Monitor.Exit(locker);
-                                        }
-
-                                    }
-
-                                    bool specialRename = false;
-                                    for (int i1 = 0; i1 < renamedFrom.Length; i1++)
-                                    {//check through all special tmprn files
-                                        if (renamedFrom[i1] == firstFileName)
-                                        {//if this thread is renaming a file that was renamed to a special tmprn
-                                            try
-                                            {//rename it back to its original name
-                                                Microsoft.VisualBasic.FileIO.FileSystem.RenameFile(fsd.FileName + @"\" + renamedTo[i1],                                           //| |   |   |   |   |   |
-                                                text + add + textAfterNumTxtBx.Text + ext);                                                             //|-|---|---|---|---|---|----rename the file
-                                                threadErrorLogger.QueueLog("INFO: " + renamedFrom[i1] + " no longer existed so instead " + renamedTo[i1]
-                                                    + " was renamed to " + text + add + textAfterNumTxtBx.Text + ext);
-                                                //Microsoft.VisualBasic.FileIO.FileSystem.RenameFile(fsd.FileName + @"\" + renamedTo[i1],
-                                                //renamedFrom[i1]);
-                                                //threadErrorLogger.QueueLog("INFO: " + renamedFrom[i1] + " no longer existed so instead " + renamedTo[i1]
-                                                //    + " was renamed to " + renamedFrom[i1]);
-                                                threadProgress[(split * (claimed - 1)) + li] = text + add + textAfterNumTxtBx.Text + ext;
-                                                specialRename = true;
-                                                break;
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                threadErrorLogger.QueueLog("CRIT: AN UNKNOWN ERROR OCCURED DURING THE RENAMING PROCESS AND WAS ABORTED! MESSAGE: " + e.Message.ToUpper());
-                                                bool tmptsst = File.Exists(fsd.FileName + @"\" + renamedTo[i1]);
-                                                tmptsst = File.Exists(fsd.FileName + @"\" + text + add + textAfterNumTxtBx.Text + ext);
-                                                errorLogger.AppendQueue(threadErrorLogger.GetQueue());
-                                                errorLogger.ReleaseQueue(path + @"\log.txt", true, true);
-                                                //threadErrorLogger.ReleaseQueue(path + @"\log.txt", true, true);
-
-                                                //include opening "recover me" program here to clean up files and attempt to 'undo' the renaming process
-                                                //something like https://stackoverflow.com/questions/3173775/how-to-run-external-program-via-a-c-sharp-program
-                                                //Process.Start
-
-                                                Invoke(new Action(() =>
-                                                {
-                                                    Environment.Exit(Environment.ExitCode);
-                                                }));
-
-                                            }
-
-
-                                        }
-
-                                    }
-
-                                    if (!specialRename)
-                                    {
-                                        try
-                                        {
-                                            if (File.Exists(fsd.FileName + @"\" + firstFileName))
-                                            {
-                                                Microsoft.VisualBasic.FileIO.FileSystem.RenameFile(fsd.FileName + @"\" + firstFileName,                                           //| |   |   |   |   |   |
-                                                text + add + textAfterNumTxtBx.Text + ext);                                                             //|-|---|---|---|---|---|----rename the file
-                                                threadErrorLogger.QueueLog("INFO: Renamed " + firstFileName + " to " + text + add + textAfterNumTxtBx.Text + ext);
-                                                threadProgress[(split * (claimed - 1)) + li] = text + add + textAfterNumTxtBx.Text + ext;
-                                            }
-                                            else
-                                            {
-                                                int dud = 0;
-                                            }
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            //if (e.InnerException is FileNotFoundException)
-                                            //{
-                                            //    Monitor.Enter(mainLocker);
-                                            //    if (File.Exists(fsd.FileName + @"\" + firstFileName)) {
-                                            //        Monitor.Exit(mainLocker);
-
-                                            //    }
-                                            //}
-                                            threadErrorLogger.QueueLog("CRIT: AN UNKNOWN ERROR OCCURED DURING THE RENAMING PROCESS AND WAS ABORTED! MESSAGE: " + e.Message.ToUpper());
-                                            errorLogger.ReleaseQueue(path + @"\log", true, true);
-                                            threadErrorLogger.ReleaseQueue(path + @"\log.txt", true, true);
-
-                                            //include opening "recover me" program here to clean up files and attempt to 'undo' the renaming process
-
-                                            Invoke(new Action(() =>
-                                            {
-                                                Environment.Exit(Environment.ExitCode);
-                                            }));
-
-                                        }
-                                    }
-
-                                }
-                                li++;                                                                                                        //|-|---|---|---|---|---|----count amount of times looped
-                                //ThreadProgressBar.TabIndex = 19;
-                                ThreadProgressBar_TabIndexChanged(null, EventArgs.Empty);
-
-                                //| |   |   |   |   |   |
-                            }                                                                                                               //|-|---|---|---|---|---|L)
-                            threadErrorLogger.QueueLog("INFO: Thread " + System.Threading.Thread.CurrentThread.ManagedThreadId
-                                + " has finished renaming its delegated files and is now waiting on the other thread to finish.");
-
-                        }
-                        else
-                        {
-                            Debug.WriteLine("CTITICAL ERROR OCCURED - NULL CLAIMING");
-                            threadErrorLogger.QueueLog("CRIT: A critical error occured during multi-threading setup - NULL CLAIMING." +
-                                "A ref file was not claimed but the process was stopped before the program started renaming.");
-
-                            MessageBox.Show("A critical error occured during multi-threading setup and will be aborted to preserve data integrity, a log has been saved to:\n"
-                                + path + @"\log.txt"
-                                + "\nPlease report the log to the issues page on the relevent branch. (" + this.Name + ")", "Critical error: NULL FILE REF"
-                                , MessageBoxButtons.OK, MessageBoxIcon.Stop);
-
-                        }
-
-
-                    }
-
-                }
-
-
-            }
-
-            //threadErrorLogger.ReleaseQueue(path + @"\log.txt", false, true);
-            errorLogger.AppendQueue(threadErrorLogger.GetQueue(), false);
-            threadErrorLogger = null;
+            {                                                                                                                                   
+                Monitor.Enter(claimLocker);                                                                                                     //- force each thread which hits this point to either claim the locker or wait until the object is claimable
+                                                                                                                                                //note: having this in the current if statement is actually required as the threads that are waiting are looping through this if statement
+            }                                                                                                                                   //
+                                                                                                                                                //
+            int claimed = -1;                                                                                                                   //- set the ref claimed by this thread to "claimed none"
+            int breakout = 1000 * processorCount;                                                                                               //- set the breakout spinTime (how many times the bellow must spin before forced breakout, stops infinite loops)
+                                                                                                                                                //
+            if (processorCount > 1)                                                                                                             //
+            {                                                                                                                                   //T if there is at least 2 processors or more
+                                                                                                                                                //|
+                for (int i = 0; i < processorCount; i++)                                                                                        //|
+                {                                                                                                                               //|-T loop for the amount of avalible processors
+                    if (file[i] == null)                                                                                                        //| |
+                    {                                                                                                                           //|-|--T if the the i'th file (current loop itteration) is null
+                        file[i] = new FileInfo(path + @"\ref" + (i + 1) + ".txt").OpenRead();                                                   //|-|--|--- assign it the i'th loop +1 ref
+                        claimed = i + 1;                                                                                                        //|-|--|--- store the ref which was claimed by this thread
+                        Debug.WriteLine("Thread " + System.Threading.Thread.CurrentThread.ManagedThreadId + " claimed ref"                      //| |  |
+                            + claimed + ".");                                                                                                   //| |  |
+                        break;                                                                                                                  //|>|>>|>>> break;
+                    }                                                                                                                           //|-|--|e)
+                                                                                                                                                //| |
+                }                                                                                                                               //|-|L)
+                                                                                                                                                //|
+                Debug.WriteLine("Thread " + System.Threading.Thread.CurrentThread.ManagedThreadId + " claimed ref" + claimed + ".");            //|
+                threadErrorLogger.QueueLog("Thread " + System.Threading.Thread.CurrentThread.ManagedThreadId + " claimed ref" + claimed + "."); //|
+                ThreadClaimed[claimed - 1] = System.Threading.Thread.CurrentThread.ManagedThreadId;                                             //|- get which thread claimed which ref
+                                                                                                                                                //|
+                Monitor.Exit(claimLocker);                                                                                                      //|- allow the next thread to flow through the above
+                reSync[claimed - 1] = true;                                                                                                     //|- shout that this thread has finished cliaming and is waiting for re-sync
+                SpinWait.SpinUntil(delegate () { return reSync.All(item => item.Equals(true)); });                                              //|- wait untill all threads reach this point
+                                                                                                                                                //|
+                int ci = 0;                                                                                                                     //|- prepare to compare current itteration of the bellow foreach loop
+                                                                                                                                                //|
+                //for debugging                                                                                                                 //|
+                //if (file[0] != null)                                                                                                          //|
+                //{                                                                                                                             //|
+                //    file[0].Close();                                                                                                          //|
+                //    file[0] = null;                                                                                                           //|
+                //}                                                                                                                             //|
+                                                                                                                                                //|
+                if (!msg)                                                                                                                       //|
+                {                                                                                                                               //|-T if an error message of this (bellow) same type has not already been sent
+                    foreach (FileStream state in file)                                                                                          //| |
+                    {                                                                                                                           //|-|--T (loop) get the state of each file (null or not)
+                        if (state == null && ci != claimed - 1)                                                                                 //| |  |
+                        {                                                                                                                       //|-|--|---T if the state of the file is null and that file is not the one claimed by this thread
+                            Monitor.Enter(claimLocker);                                                                                         //|-|--|---|----- lock only one thread to do:
+                            Debug.WriteLine("CTITICAL ERROR OCCURED - NULL CLAIMING");                                                          //| |  |   |
+                            threadErrorLogger.QueueLog("ERROR: A critical error occured during multi-threading setup - NULL CLAIMING."          //|-|--|---|----- log that an error occured
+                                + "ref" + ci + " was not claimed.");                                                                            //| |  |   |
+                            threadErrorLogger.ReleaseQueue(path + @"\log.txt");                                                                 //|-|--|---|----- output the log to the logging file
+                                                                                                                                                //| |  |   |    
+                            if (!msg)                                                                                                           //| |  |   |    
+                            {                                                                                                                   //|-|--|---|----T if an error message of this (bellow) same type still has not already been sent
+                                MessageBox.Show("A critical error occured during multi-threading setup and will be aborted to preserve data "   //|-|--|---|----|------ tell the user an error occured and what to do
+                                    + "integrity, a log has been saved to:\n" + path + @"\log.txt"                                              //| |  |   |    |
+                                    + "\nPlease report the log to the issues page on the relevent branch. (" + this.Name + ")"                  //| |  |   |    |
+                                    , "Critical error: NULL FILE REF", MessageBoxButtons.OK, MessageBoxIcon.Stop);                              //| |  |   |    |
+                                msg = true;                                                                                                     //|-|--|---|----|------ set that this message has been sent and does not need to be sent again
+                            }                                                                                                                   //|-|--|---|----|e)
+                                                                                                                                                //| |  |   |
+                            ci = -1;                                                                                                            //|-|--|---|----- set other checks to that an error has occured
+                            Monitor.Exit(claimLocker);                                                                                          //|-|--|---|----- allow next thread through
+                            break;                                                                                                              //|>|>>|>>>|>>>>> break;
+                                                                                                                                                //| |  |   |    
+                        }                                                                                                                       //|-|--|---|e)
+                        ci++;                                                                                                                   //|-|--|---- (implied: otherwise) store that its going to the next state
+                                                                                                                                                //|-|--|
+                    }                                                                                                                           //|-|--|L)
+                }                                                                                                                               //|-|e)
+                                                                                                                                                //|
+                if (ci == -1)                                                                                                                   //|
+                {                                                                                                                               //|-T if above has reported an error occured
+                    if (file[claimed - 1] == null)                                                                                              //| |
+                    {                                                                                                                           //|-|--T and the file claimed by this thread is null
+                        Debug.WriteLine("CTITICAL ERROR OCCURED - NULL CLAIMING");                                                              //| |  |
+                        threadErrorLogger.QueueLog("ERROR: A critical error occured during multi-threading setup - NULL CLAIMING. Thread "      //|-|--|---- log that an error occured on which thread of which ref
+                            + System.Threading.Thread.CurrentThread.ManagedThreadId + " failed to claim ref" + (claimed - 1));                  //| |  |
+                        threadErrorLogger.ReleaseQueue(path + @"\log.txt");                                                                     //|-|--|---- output the log to the logging file
+                                                                                                                                                //| |  |
+                    }                                                                                                                           //|-|--|e)
+                } else {                                                                                                                        //|-\c) otherwise if no other thread has failed to claim a file
+                                                                                                                                                //| |
+                    if (file[claimed - 1] == null)                                                                                              //| |
+                    {                                                                                                                           //|-|--T if the file claimed by this thread is null
+                        Debug.WriteLine("CTITICAL ERROR OCCURED - NULL CLAIMING");                                                              //| |--|
+                        threadErrorLogger.QueueLog("ERROR: A critical error occured during multi-threading setup - NULL CLAIMING. Thread "      //|-|--|---- log that an error occured on which thread of which ref
+                            + System.Threading.Thread.CurrentThread.ManagedThreadId + " failed to claim ref" + (claimed - 1));                  //| |--|
+                        threadErrorLogger.ReleaseQueue(path + @"\log.txt");                                                                     //|-|--|---- output the log to the logging file
+                                                                                                                                                //| |--|
+                    } else {                                                                                                                    //|-|--\c) otherwise if this thread has not failed to claim a file
+                        int sleepTimer = 100 * claimed;                                                                                         //|-|--|---- set time to sleep for forcing de-sync after re-sync to 100ms between each thread        
+                        System.Threading.Thread.Sleep(sleepTimer);                                                                              //|-|--|---- force desync
+                        IEnumerable<string> addT = null;                                                                                        //|-|--|---- prepare to store the addition after text as an enumerable
+                        string text = fileRenameTxtBx.Text;                                                                                     //|-|--|---- get the user inputted text
+                        string ext = "";                                                                                                        //|-|--|---- prepare to store the extention
+                        StreamReader stream = File.OpenText(file[claimed - 1].Name);                                                            //|-|--|---- open the ref's stream
+                        string[] tmpa = new string[split];                                                                                      //|-|--|---- prepare to store the delegated data in an array (for handling naming conflicts and cross delegation naming conflictions)
+                        int ai = 0;                                                                                                             //| |  |
+                        int li = 0;                                                                                                             //|-|--|---- prepare to store the location the foreach statement of addT is at 
+                                                                                                                                                //| |  |
+                        while (!stream.EndOfStream)                                                                                             //| |  |
+                        {                                                                                                                       //|-|--|---T (loop) while not at the end of the stream (not at end of file)
+                            tmpa[ai] = stream.ReadLine();                                                                                       //|-|--|---|----- read a line of the file into the tmpa array
+                            ai++;                                                                                                               //| |  |   |
+                                                                                                                                                //| |  |   |
+                        }                                                                                                                       //|-|--|---|W)
+                                                                                                                                                //| |  |
+                        stream.Close();                                                                                                         //|-|--|----- close the ref streamReader
+                        file[claimed - 1].Close();                                                                                              //|-|--|----- close the ref fileStream
+                                                                                                                                                //| |  |
+                        if (alphabeticalTSMI.Checked)                                                                                           //| |  |
+                        {                                                                                                                       //|-|--|---T if the user has defined to use alphabetical sorting
+                            int splitChar = int.Parse("A") + ((claimed * split) - 1);                                                           //|-|--|---|----- get the current character this thread will start sorting from (get delegated sorting set start)
+                            addT = Splitter.GetAdditionType(0, splitChar.ToString(), (claimed - 1) * split);                                    //|-|--|---|----- get the enumerator, called an "addition", of the character each file will have attatched as a sorter where the enumerable will end on the last delegated letter 
+                                                                                                                                                //| |  |   |
+                        } else if (numericaldTSMI.Checked) {                                                                                    //|-|--|---\c) otherwise if the user has defined to use alphanumerical sorting
+                            addT = Splitter.GetAdditionType(1, (split * claimed).ToString(), ((claimed - 1) * split) + 1);                      //|-|--|---|----- get the enumerator, called an "addition", of the number each file will have attatched as a sorter where the enumerable will end on the last delegated number 
+                        } else if (customTSMI.Checked) {                                                                                        //|-|--|---\c) otherwise if the user has defined to use a custom sorting method
+                                                                                                                                                //|X|XX|XXX| currently unused
+                        }                                                                                                                       //|-|--|---|e)
+                                                                                                                                                //| |  |
+                        bool failedClaim = false;                                                                                               //|-|--|---- prepare to get if a thread failed to claim a ref delegation as "failedClaim"
+                        foreach (FileStream state in file)                                                                                      //| |  |
+                        {                                                                                                                       //|-|--|---T loop through each ref file as a 'state'
+                            if (state == null)                                                                                                  //| |  |   |
+                            {                                                                                                                   //|-|--|---|----T if the state is null
+                                failedClaim = true;                                                                                             //|-|--|---|----|------ a thread failed to claim a ref, set failedClaim as true
+                            }                                                                                                                   //| |  |   |    |e)
+                                                                                                                                                //| |  |   |
+                        }                                                                                                                       //| |  |   |L)
+                                                                                                                                                //| |  |
+                        if (!failedClaim)                                                                                                       //| |  |
+                        {                                                                                                                       //|-|--|---T (if) double check all files where claimed correctly
+                            foreach (string add in addT)                                                                                        //| |  |   |
+                            {                                                                                                                   //|-|--|---|----T (loop) generate and get each addition to add to the renaming process of this file related to this foreach possition
+                                string firstFileName = tmpa[li];                                                                                //|-|--|---|----|------ get the file related to this foreach possition
+                                                                                                                                                //| |  |   |    |
+                                if (firstFileName == null)                                                                                      //| |  |   |    |
+                                {                                                                                                               //|-|--|---|----|-----T if the current ref file does not exist
+                                    Debug.WriteLine("CTITICAL ERROR OCCURED - NULL CLAIMING");                                                  //| |  |   |    |     |
+                                    threadErrorLogger.QueueLog("CRIT: A critical error occured during multi-threading inner-runtime" +          //|-|--|---|----|-----|------- queue a log that an error occured
+                                        " - NULL CLAIMING. A ref file was not claimed and the process is likely to have not have stopped " +    //| |  |   |    |     |
+                                        "before the program started renaming.");                                                                //| |  |   |    |     |
+                                                                                                                                                //| |  |   |    |     |
+                                    //start error recovery program                                                                              //| |  |   |    |     |
+                                                                                                                                                //| |  |   |    |     |
+                                    Invoke(new Action(() =>                                                                                     //|-|--|---|----|-----|------T force all threads to run this action
+                                                    {                                                                                           //| |  |   |    |     |      |
+                                                        errorLogger.AppendQueue(threadErrorLogger.GetQueue());                                  //|-|--|---|----|-----|------|-------- append the above log to the main error logger queue
+                                                        errorLogger.ReleaseQueue(path + @"\log.txt", true, true);                               //|-|--|---|----|-----|------|-------- release the queue
+                                                        Environment.Exit(Environment.ExitCode);                                                 //|-|--|---|----|-----|------|-------- force the program to exit out on all threads used by this program
+                                                    }));                                                                                        //| |  |   |    |     |      |e)
+                                }                                                                                                               //|-|--|---|----|-----|e)
+                                string firstNameSplit = firstFileName.Split(Convert.ToChar(92)).Last();                                         //|-|--|---|----|------ get the name of the file to rename
+                                                                                                                                                //| |  |   |    |
+                                if (fileRenameTxtBx.Text.Length != 0 && (fileRenameTxtBx.Text == "What to rename the file to"                   //| |  |   |    |
+                                && fileRenameTxtBx.Text == "You may not rename files while sorting is disabled"))                               //| |  |   |    |
+                                {                                                                                                               //|-|--|---|----|-----T if the user has defined a name to rename the files to
+                                    text = firstFileName;                                                                                       //|-|--|---|----|-----|------- set the text to rename the file to as the users input
+                                }                                                                                                               //|-|--|---|----|-----|e)
+                                                                                                                                                //| |  |   |    |
+                                if (extentionTxtBx.Text.Length > 0 && (extentionTxtBx.Text != "Extention (optional)"                            //| |  |   |    |
+                                && extentionTxtBx.Text != "Extention"))                                                                         //| |  |   |    |
+                                {                                                                                                               //|-|--|---|----|-----T if the user has defined an extention to change every file to
+                                    ext = "." + extentionTxtBx.Text;                                                                            //|-|--|---|----|-----|------- set the extention to the users input
+                                } else {                                                                                                        //|-|--|---|----|-----\c) otherwise if the user has not defined an extention
+                                    ext = Path.GetExtension(firstFileName);                                                                     //|-|--|---|----|-----|------- set the extnetion as the extention of the current file
+                                }                                                                                                               //|-|--|---|----|-----|e)
+                                                                                                                                                //| |  |   |    |
+                                if (firstNameSplit != text + add + textAfterNumTxtBx.Text + ext)                                                //| |  |   |    |
+                                {                                                                                                               //|-|--|---|----|-----T if the item to rename isn't already in the correct possition
+                                                                                                                                                //| |  |   |    |     |
+                                    if (File.Exists(fsd.FileName + @"\" + text + add + textAfterNumTxtBx.Text + ext))                           //| |  |   |    |     |
+                                    {                                                                                                           //|-|--|---|----|-----|------T if a file conflict occures (file already exists)
+                                        int tmpi = 0;                                                                                           //|-|--|---|----|-----|------|-------- prepare to get the file's possition in the array (tmpa) as tmpi
+                                                                                                                                                //| |  |   |    |     |      |
+                                        foreach (string item in tmpa)                                                                           //| |  |   |    |     |      |
+                                        {                                                                                                       //|-|--|---|----|-----|------|-------T (loop) go through each file delegated to this thread
+                                            if (item == text + add + textAfterNumTxtBx.Text + ext)                                              //| |  |   |    |     |      |       |
+                                            {                                                                                                   //|-|--|---|----|-----|------|-------|--------T find the index in ref (and the array) the conflict file exists
+                                                break;                                                                                          //|>|>>|>>>|>>>>|>>>>>|>>>>>>|>>>>>>>|>>>>>>>>|>>>>>>>>> if found, break out of loop
+                                            }                                                                                                   //|-|--|---|----|-----|------|-------|--------|e)
+                                            tmpi++;                                                                                             //|-|--|---|----|-----|------|-------|--------- itterate tmpi
+                                                                                                                                                //| |  |   |    |     |      |       |      
+                                        }                                                                                                       //|-|--|---|----|-----|------|-------|L)
+                                                                                                                                                //| |  |   |    |     |      |
+                                        if (tmpi == tmpa.Length)                                                                                //| |  |   |    |     |      |
+                                        {                                                                                                       //|-|--|---|----|-----|------|-------T if could find the conflicting file in this delegation
+                                            try                                                                                                 //|-|--|---|----|-----|------|-------| then we're dealing with a 'cross delegation' issue where the delegated file is being renamed on another thread
+                                            {                                                                                                   //|-|--|---|----|-----|------|-------|--------T try
+                                                if (System.Threading.Thread.CurrentThread.IsBackground)                                         //| |  |   |    |     |      |       |        |
+                                                {                                                                                               //|-|--|---|----|-----|------|-------|--------|---------T if this thread is a background thread (which should always be true, this is requied to 'hold' other threads which fail the bellow)
+                                                    Monitor.Enter(locker);                                                                      //|-|--|---|----|-----|------|-------|--------|---------|----------- 'bottle neck' any threads moving through here to move one at a time
+                                                                                                                                                //| |  |   |    |     |      |       |        |         |
+                                                }                                                                                               //|-|--|---|----|-----|------|-------|--------|---------|e)
+                                                                                                                                                //| |  |   |    |     |      |       |        |         
+                                                if (File.Exists(fsd.FileName + @"\" + text + add + textAfterNumTxtBx.Text + ext))               //| |  |   |    |     |      |       |        |         
+                                                {                                                                                               //|-|--|---|----|-----|------|-------|--------|---------T
+                                                    Array.Resize(ref renamedFrom, renamedFrom.Length + 1);                                      //|-|--|---|----|-----|------|-------|--------|---------|----------- rezise renamedFrom array to be one larger
+                                                    Array.Resize(ref renamedTo, renamedTo.Length + 1);                                          //|-|--|---|----|-----|------|-------|--------|---------|----------- rezise renamedTo array to be one larger
+                                                    renamedFrom[renamedFrom.Length - 1] = text + add + textAfterNumTxtBx.Text + ext;            //|-|--|---|----|-----|------|-------|--------|---------|----------- add the conflict file's name to the renamedFrom array
+                                                    renamedTo[renamedTo.Length - 1] = "TMPRN" + tmpc + ext;                                     //|-|--|---|----|-----|------|-------|--------|---------|----------- add the conflict file's new name to the renamedTo array
+                                                                                                                                                //| |  |   |    |     |      |       |        |         |
+                                                    Microsoft.VisualBasic.FileIO.FileSystem.RenameFile(fsd.FileName + @"\"                      //|-|--|---|----|-----|------|-------|--------|---------|----------- rename the file
+                                                        + text + add + textAfterNumTxtBx.Text + ext, "TMPRN" + tmpc + ext);                     //| |  |   |    |     |      |       |        |         |
+                                                    threadErrorLogger.QueueLog("INFO: Temporarily renamed " + text + add                        //| |  |   |    |     |      |       |        |         |
+                                                        + textAfterNumTxtBx.Text + ext + " to TMPRN" + tmpc + ext);                             //| |  |   |    |     |      |       |        |         |
+                                                    threadProgress[((processorCount * claimed) - 1) + li] = "TMPRN" + tmpc + ext;               //| |  |   |    |     |      |       |        |         |
+                                                    tmpc++;                                                                                     //|-|--|---|----|-----|------|-------|--------|---------|----------- itterate tmpc
+                                                }                                                                                               //|-|--|---|----|-----|------|-------|--------|---------|e)
+                                                System.Threading.Monitor.Exit(locker);                                                          //|-|--|---|----|-----|------|-------|--------|---------- release the bottle neck to allow the next thread to lock the above bit
+                                                                                                                                                //| |  |   |    |     |      |       |        |         
+                                            } catch (Exception e) {                                                                             //|-|--|---|----|-----|------|-------|--------|c) catch any errors and do:
+                                                if (e.InnerException is FileNotFoundException || e.HResult == -2147024894)                      //| |  |   |    |     |      |       |        |  
+                                                {                                                                                               //|-|--|---|----|-----|------|-------|--------|---------T if conflict has been self solved by the other thread then just continue on normally
+                                                } else {                                                                                        //|-|--|---|----|-----|------|-------|--------|---------\c) otherwise if any other error occued
+                                                    threadErrorLogger.QueueLog("CRIT: AN ERROR OCCURED DURING THE RENAMING PROCESS AND WAS"     //|-|--|---|----|-----|------|-------|--------|---------|----------- queue that an error occued
+                                                        + " ABORTED! FAILED TO FIND THE FILE TO TEMPORARILY RENAME. " + text.ToUpper()          //| |  |   |    |     |      |       |        |         |
+                                                        + add.ToUpper()                                                                         //| |  |   |    |     |      |       |        |         |
+                                                    + textAfterNumTxtBx.Text.ToUpper() + ext.ToUpper() + " EXISTS BUT THE REFERENCE IS" +       //| |  |   |    |     |      |       |        |         |
+                                                    " MISSING. ANOTHER THREAD MAY HAVE THE REFERENCE.\nEXITING!");                              //| |  |   |    |     |      |       |        |         |
+                                                    //errorLogger.AppendQueue(threadErrorLogger.GetQueue());                                    //| |  |   |    |     |      |       |        |         |
+                                                    //errorLogger.ReleaseQueue(path + @"\log.txt", true, true);                                 //| |  |   |    |     |      |       |        |         |
+                                                                                                                                                //| |  |   |    |     |      |       |        |         |
+                            //include opening "recover me" program here to clean up files and attempt to 'undo' the renaming process            //| |  |   |    |     |      |       |        |         |
+                            //something like https://stackoverflow.com/questions/3173775/how-to-run-external-program-via-a-c-sharp-program      //| |  |   |    |     |      |       |        |         |
+                                                    //Process.Start                                                                             //| |  |   |    |     |      |       |        |         |
+                                                                                                                                                //| |  |   |    |     |      |       |        |         |
+                                                    Invoke(new Action(() =>                                                                     //|-|--|---|----|-----|------|-------|--------|---------|----------T force all threads to run this action
+                                                    {                                                                                           //| |  |   |    |     |      |       |        |         |          |
+                                                        errorLogger.AppendQueue(threadErrorLogger.GetQueue());                                  //|-|--|---|----|-----|------|-------|--------|---------|----------|------------ append the above log to the main error logger queue
+                                                        errorLogger.ReleaseQueue(path + @"\log.txt", true, true);                               //|-|--|---|----|-----|------|-------|--------|---------|----------|------------ release the queue
+                                                        Environment.Exit(Environment.ExitCode);                                                 //|-|--|---|----|-----|------|-------|--------|---------|----------|------------ force the program to exit out on all threads used by this program
+                                                    }));                                                                                        //|-|--|---|----|-----|------|-------|--------|---------|----------|e)
+                                                }                                                                                               //|-|--|---|----|-----|------|-------|--------|---------|e)
+                                            }                                                                                                   //|-|--|---|----|-----|------|-------|--------|e)
+                                                                                                                                                //| |  |   |    |     |      |       |
+                                        } else {                                                                                                //|-|--|---|----|-----|------|-------\c)
+                                            if (System.Threading.Thread.CurrentThread.IsBackground)                                             //|-|--|---|----|-----|------|-------|
+                                            {                                                                                                   //|-|--|---|----|-----|------|-------|--------T if the thread is a background thread
+                                                Monitor.Enter(locker);                                                                          //|-|--|---|----|-----|------|-------|--------|---------- 'bottle neck' any threads moving through here to move one at a time, also affects the above locker (so that a 'same time' rename doesn't occur)
+                                                                                                                                                //| |  |   |    |     |      |       |        |
+                                            }                                                                                                   //|-|--|---|----|-----|------|-------|--------|e)
+                                                                                                                                                //| |  |   |    |     |      |       |
+                                            if (File.Exists(fsd.FileName + @"\" + text + add + textAfterNumTxtBx.Text + ext))                   //| |  |   |    |     |      |       |
+                                            {                                                                                                   //|-|--|---|----|-----|------|-------|--------T (if) check again if the file exists as the threads are being delayed by the monitor (the locker)
+                                                try                                                                                             //| |  |   |    |     |      |       |        |
+                                                {                                                                                               //|-|--|---|----|-----|------|-------|--------|---------T try
+                                                    Microsoft.VisualBasic.FileIO.FileSystem.RenameFile(fsd.FileName + @"\"                      //|-|--|---|----|-----|------|-------|--------|---------|----------- rename the file
+                                                    + text + add + textAfterNumTxtBx.Text + ext, "TMPRN" + tmpc + ext);                         //| |  |   |    |     |      |       |        |         |
+                                                    threadErrorLogger.QueueLog("INFO: Temporarily renamed " + text + add                        //| |  |   |    |     |      |       |        |         |
+                                                        + textAfterNumTxtBx.Text + ext + " to TMPRN" + tmpc + ext);                             //| |  |   |    |     |      |       |        |         |
+                                                    threadProgress[((processorCount * claimed) - 1) + li] = "TMPRN" + tmpc + ext;               //| |  |   |    |     |      |       |        |         |
+                                                    tmpa[tmpi] = "TMPRN" + tmpc + ext;                                                          //|-|--|---|----|-----|------|-------|--------|---------|----------- update the ref array (tmpa) to the new file name
+                                                    tmpc++;                                                                                     //|-|--|---|----|-----|------|-------|--------|---------|----------- itterate tmpc
+                                                } catch (Exception e) {                                                                         //|-|--|---|----|-----|------|-------|--------|---------|c) catch any error
+                                                    if (e.InnerException is FileNotFoundException || e.HResult == -2147024894)                  //|-|--|---|----|-----|------|-------|--------|---------|----------T if conflict has been self solved by the other thread then just continue on normally
+                                                    {                                                                                           //| |  |   |    |     |      |       |        |         |          |
+                                                    } else {                                                                                    //|-|--|---|----|-----|------|-------|--------|---------|----------\c) otherwise if any other error type
+                                                        threadErrorLogger.QueueLog("CRIT: AN UNKNOWN ERROR OCCURED DURING THE RENAMING PROCESS" //|-|--|---|----|-----|------|-------|--------|---------|----------|------------ log that an error occured
+                                                            + " AND WAS ABORTED! MESSAGE: " + e.Message.ToUpper());                             //| |  |   |    |     |      |       |        |         |          |
+                                                        //threadErrorLogger.ReleaseQueue(path + @"\log.txt", true, true);                       //| |  |   |    |     |      |       |        |         |          |
+                                                                                                                                                //| |  |   |    |     |      |       |        |         |          |
+                                                        //include opening "recover me" program here to clean up files and attempt to 'undo'     //| |  |   |    |     |      |       |        |         |          |
+                                                        //the renaming process. something like                                                  //| |  |   |    |     |      |       |        |         |          |
+                                       //https://stackoverflow.com/questions/3173775/how-to-run-external-program-via-a-c-sharp-program          //| |  |   |    |     |      |       |        |         |          |
+                                                        //Process.Start                                                                         //| |  |   |    |     |      |       |        |         |          |
+                                                                                                                                                //| |  |   |    |     |      |       |        |         |          |
+                                                        Invoke(new Action(() =>                                                                 //|-|--|---|----|-----|------|-------|--------|---------|----------|-----------T force all threads to run this action
+                                                        {                                                                                       //| |  |   |    |     |      |       |        |         |          |           |
+                                                            errorLogger.AppendQueue(threadErrorLogger.GetQueue());                              //|-|--|---|----|-----|------|-------|--------|---------|----------|-----------|------------- append the above log to the main error logger queue
+                                                            errorLogger.ReleaseQueue(path + @"\log.txt", true, true);                           //|-|--|---|----|-----|------|-------|--------|---------|----------|-----------|------------- release the queue
+                                                            Environment.Exit(Environment.ExitCode);                                             //|-|--|---|----|-----|------|-------|--------|---------|----------|-----------|------------- force the program to exit out on all threads used by this program
+                                                        }));                                                                                    //|-|--|---|----|-----|------|-------|--------|---------|----------|-----------|e)
+                                                    }                                                                                           //|-|--|---|----|-----|------|-------|--------|---------|----------|e)
+                                                                                                                                                //| |  |   |    |     |      |       |        |         |
+                                                }                                                                                               //|-|--|---|----|-----|------|-------|--------|---------|e)
+                                            }                                                                                                   //|-|--|---|----|-----|------|-------|        |e)
+                                            Monitor.Exit(locker);                                                                               //|-|--|---|----|-----|------|-------|--------- 'bottle neck' any threads moving through here to move one at a time
+                                        }                                                                                                       //|-|--|---|----|-----|------|-------|e)
+                                                                                                                                                //| |  |   |    |     |      |
+                                    }                                                                                                           //|-|--|---|----|-----|------|e)
+                                                                                                                                                //| |  |   |    |     |
+                                    bool specialRename = false;                                                                                 //|-|--|---|----|-----|------ store weather or not bellow occured (cross delegation - other thread handler)
+                                    for (int i1 = 0; i1 < renamedFrom.Length; i1++)                                                             //| |  |   |    |     |
+                                    {                                                                                                           //|-|--|---|----|-----|------T check through all special tmprn files
+                                        if (renamedFrom[i1] == firstFileName)                                                                   //| |  |   |    |     |      |
+                                        {                                                                                                       //|-|--|---|----|-----|------|-------T if this thread is renaming a file that was renamed to a special tmprn
+                                            try                                                                                                 //| |  |   |    |     |      |       |      
+                                            {                                                                                                   //|-|--|---|----|-----|------|-------|--------T try
+                                                Microsoft.VisualBasic.FileIO.FileSystem.RenameFile(fsd.FileName + @"\" + renamedTo[i1],         //|-|--|---|----|-----|------|-------|--------|--------- rename it back to its original name
+                                                text + add + textAfterNumTxtBx.Text + ext);                                                     //| |  |   |    |     |      |       |        |
+                                                threadErrorLogger.QueueLog("INFO: " + renamedFrom[i1] + " no longer existed so instead "        //| |  |   |    |     |      |       |        |
+                                                    + renamedTo[i1] + " was renamed to " + text + add + textAfterNumTxtBx.Text + ext);          //| |  |   |    |     |      |       |        |
+                                                threadProgress[(split * (claimed - 1)) + li] = text + add + textAfterNumTxtBx.Text + ext;       //| |  |   |    |     |      |       |        |
+                                                specialRename = true;                                                                           //|-|--|---|----|-----|------|-------|--------|--------- set that a rename has already occured for this target file
+                                                break;                                                                                          //|>|>>|>>>|>>>>|>>>>>|>>>>>>|>>>>>>>|>>>>>>>>|>>>>>>>>> break;
+                                            } catch (Exception e) {                                                                             //|-|--|---|----|-----|------|-------|--------|c) catch any error
+                                                threadErrorLogger.QueueLog("CRIT: AN UNKNOWN ERROR OCCURED DURING THE RENAMING PROCESS AND" +   //|-|--|---|----|-----|------|-------|--------|--------- queue that an error occured
+                                                    " WAS ABORTED! MESSAGE: " + e.Message.ToUpper());                                           //| |  |   |    |     |      |       |        |
+                                                threadErrorLogger.QueueLog("INFO: renamedTo[i1] exists? "                                       //| |  |   |    |     |      |       |        |
+                                                    + File.Exists(fsd.FileName + @"\" + renamedTo[i1]));                                        //| |  |   |    |     |      |       |        |
+                                                threadErrorLogger.QueueLog("INFO: " + text + add + textAfterNumTxtBx.Text + ext + " exists? "   //| |  |   |    |     |      |       |        |
+                                                    + File.Exists(fsd.FileName + @"\" + text + add + textAfterNumTxtBx.Text + ext));            //| |  |   |    |     |      |       |        |
+                                                //threadErrorLogger.ReleaseQueue(path + @"\log.txt", true, true);                               //| |  |   |    |     |      |       |        |
+                                                                                                                                                //| |  |   |    |     |      |       |        |
+                                 //include opening "recover me" program here to clean up files and attempt to 'undo' the renaming process       //| |  |   |    |     |      |       |        |
+                                 //something like https://stackoverflow.com/questions/3173775/how-to-run-external-program-via-a-c-sharp-program //| |  |   |    |     |      |       |        |
+                                                //Process.Start                                                                                 //| |  |   |    |     |      |       |        |
+                                                                                                                                                //| |  |   |    |     |      |       |        |
+                                                Invoke(new Action(() =>                                                                         //|-|--|---|----|-----|------|-------|--------|---------T force all threads to run this action
+                                                {                                                                                               //| |  |   |    |     |      |       |        |         |
+                                                    errorLogger.AppendQueue(threadErrorLogger.GetQueue());                                      //|-|--|---|----|-----|------|-------|--------|---------|---------- append the above log to the main error logger queue
+                                                    errorLogger.ReleaseQueue(path + @"\log.txt", true, true);                                   //|-|--|---|----|-----|------|-------|--------|---------|---------- release the queue
+                                                    Environment.Exit(Environment.ExitCode);                                                     //|-|--|---|----|-----|------|-------|--------|---------|---------- force the program to exit out on all threads used by this program
+                                                }));                                                                                            //|-|--|---|----|-----|------|-------|--------|---------|e)
+                                                                                                                                                //| |  |   |    |     |      |       |        |
+                                            }                                                                                                   //|-|--|---|----|-----|------|-------|--------|e)
+                                                                                                                                                //| |  |   |    |     |      |       |
+                                                                                                                                                //| |  |   |    |     |      |       |
+                                        }                                                                                                       //|-|--|---|----|-----|------|-------|e)
+                                                                                                                                                //| |  |   |    |     |      |
+                                    }                                                                                                           //|-|--|---|----|-----|------|L)
+                                                                                                                                                //| |  |   |    |     |
+                                    if (!specialRename)                                                                                         //| |  |   |    |     |
+                                    {                                                                                                           //|-|--|---|----|-----|------T if the above did not occur
+                                        try                                                                                                     //| |  |   |    |     |      |
+                                        {                                                                                                       //|-|--|---|----|-----|------|-------T try
+                                            if (File.Exists(fsd.FileName + @"\" + firstFileName))                                               //| |  |   |    |     |      |       |
+                                            {                                                                                                   //|-|--|---|----|-----|------|-------|--------T if the file to rename exists
+                                                Microsoft.VisualBasic.FileIO.FileSystem.RenameFile(fsd.FileName + @"\" + firstFileName,         //|-|--|---|----|-----|------|-------|--------|---------- rename the file
+                                                text + add + textAfterNumTxtBx.Text + ext);                                                     //| |  |   |    |     |      |       |        |
+                                                threadErrorLogger.QueueLog("INFO: Renamed " + firstFileName + " to " + text + add               //| |  |   |    |     |      |       |        |
+                                                    + textAfterNumTxtBx.Text + ext);                                                            //| |  |   |    |     |      |       |        |
+                                                threadProgress[(split * (claimed - 1)) + li] = text + add + textAfterNumTxtBx.Text + ext;       //| |  |   |    |     |      |       |        |
+                                            } else {                                                                                            //|-|--|---|----|-----|------|-------|--------|\c)
+                                                int dud = 0;                                                                                    //| |  |   |    |     |      |       |        |
+                                            }                                                                                                   //|-|--|---|----|-----|------|-------|--------|e)
+                                        } catch (Exception e) {                                                                                 //|-|--|---|----|-----|------|-------|c)
+                                            threadErrorLogger.QueueLog("CRIT: AN UNKNOWN ERROR OCCURED DURING THE RENAMING PROCESS AND WAS" +   //|-|--|---|----|-----|------|-------|--------- log that an unknown error occured
+                                                " ABORTED! MESSAGE: " + e.Message.ToUpper());                                                   //| |  |   |    |     |      |       |
+                                            threadErrorLogger.QueueLog("INFO: renamedTo[i1] exists? "                                           //| |  |   |    |     |      |       |
+                                                    + File.Exists(fsd.FileName + @"\" + firstFileName));                                        //| |  |   |    |     |      |       |
+                                                threadErrorLogger.QueueLog("INFO: " + text + add + textAfterNumTxtBx.Text + ext + " exists? "   //| |  |   |    |     |      |       |
+                                                    + File.Exists(fsd.FileName + @"\" + text + add + textAfterNumTxtBx.Text + ext));            //| |  |   |    |     |      |       |
+                                                                                                                                                //| |  |   |    |     |      |       |
+                                            //include opening "recover me" program here to clean up files and attempt to 'undo' the             //| |  |   |    |     |      |       |
+                                            //renaming process                                                                                  //| |  |   |    |     |      |       |
+                                                                                                                                                //| |  |   |    |     |      |       |
+                                            Invoke(new Action(() =>                                                                             //|-|--|---|----|-----|------|-------|--------T force all threads to run this action
+                                            {                                                                                                   //| |  |   |    |     |      |       |        |
+                                                errorLogger.ReleaseQueue(path + @"\log", true, true);                                           //|-|--|---|----|-----|------|-------|--------|-------- append the above log to the main error logger queue
+                                                threadErrorLogger.ReleaseQueue(path + @"\log.txt", true, true);                                 //|-|--|---|----|-----|------|-------|--------|-------- release the queue
+                                                Environment.Exit(Environment.ExitCode);                                                         //|-|--|---|----|-----|------|-------|--------|-------- force the program to exit out on all threads used by this program
+                                            }));                                                                                                //|-|--|---|----|-----|------|-------|--------|e)
+                                                                                                                                                //| |  |   |    |     |      |       |
+                                        }                                                                                                       //|-|--|---|----|-----|------|-------|e)
+                                    }                                                                                                           //|-|--|---|----|-----|------|e)
+                                                                                                                                                //| |  |   |    |     |
+                                }                                                                                                               //|-|--|---|----|-----|e)
+                                li++;                                                                                                           //|-|--|---|----|------ count amount of times looped
+                                ThreadProgressBar_TabIndexChanged(null, EventArgs.Empty);                                                       //|-|--|---|----|------ force the tread progress bar to itterate
+                                                                                                                                                //| |  |   |    |
+                            }                                                                                                                   //|-|--|---|----|L)
+                            threadErrorLogger.QueueLog("INFO: Thread " + System.Threading.Thread.CurrentThread.ManagedThreadId                  //| |  |   |
+                                + " has finished renaming its delegated files and is now waiting on the other thread to finish.");              //| |  |   |
+                                                                                                                                                //| |  |   |
+                        } else {                                                                                                                //|-|--|---\c) otherwise if failClaim is true (all files where not claimed correctly)
+                            Debug.WriteLine("CTITICAL ERROR OCCURED - NULL CLAIMING");                                                          //| |  |   |
+                            threadErrorLogger.QueueLog("CRIT: A critical error occured during multi-threading inter-setup - NULL CLAIMING." +   //|-|--|---|----- queue that an error occured
+                                "A ref file was not claimed but the process may not have stopped before the program started renaming.");        //| |  |   |
+                            threadErrorLogger.ReleaseQueue(path + @"\log.txt");                                                                 //|-|--|---|----- release the queue
+                                                                                                                                                //| |  |   |
+                            MessageBox.Show("A critical error occured during multi-threading setup and will be aborted to preserve data" +      //| |  |   |
+                                " integrity, a log has been saved to:\n" + path + @"\log.txt"                                                   //| |  |   |
+                                + "\nPlease report the log to the issues page on the relevent branch. (" + this.Name + ")"                      //| |  |   |
+                                , "Critical error: NULL FILE REF", MessageBoxButtons.OK, MessageBoxIcon.Stop);                                  //| |  |   |
+                                                                                                                                                //| |  |   |
+                        }                                                                                                                       //|-|--|---|e)
+                                                                                                                                                //| |  |
+                                                                                                                                                //| |  |
+                    }                                                                                                                           //|-|--|e)
+                                                                                                                                                //| |
+                }                                                                                                                               //|-|e)
+                                                                                                                                                //|
+                                                                                                                                                //|
+            }                                                                                                                                   //|e)
+                                                                                                                                                //
+            if (file.All(item => item != null))                                                                                                 //
+            {                                                                                                                                   //T if none of the files are null
+                errorLogger.AppendQueue(threadErrorLogger.GetQueue(), false);                                                                   //|--- release all the queued logs to main logger
+            }                                                                                                                                   //|e)
+                                                                                                                                                //
+            threadErrorLogger = null;                                                                                                           //- dispose of the thread error logger
 
         }
 
         //when the renaming process is finished
         private void backgroundThread_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            System.Diagnostics.Process.Start(selectedPath);
-            BtnMassRename.Enabled = true;
-            PreferencesTSMI.Enabled = true;
-            active = false;
-            textAfterNumTxtBx.Text = "Text after number (optional)";
-            i = 0;
-            ThreadProgressBar.Visible = false;
+            System.Diagnostics.Process.Start(selectedPath);                 //- open the selceted folder for the user
+            BtnMassRename.Enabled = true;                                   //- re-enable the mass rename button
+            PreferencesTSMI.Enabled = true;                                 //- re-enable the preferences TSMI
+            active = false;                                                 //- set that the program is not longer mass renaming
+            textAfterNumTxtBx.Text = "Text after number (optional)";        //- set the text after number text box to display its previous text so that it isn't just blank
+            ThreadProgressBar.Visible = false;                              //- hide the thread progress bar
 
             //for debugging
             //foreach (string item in threadProgress)

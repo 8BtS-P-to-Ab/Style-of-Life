@@ -1,4 +1,14 @@
-﻿need to add "text prior"
+﻿Notes:
+Need to add mass folder renaming
+Need to add "text prior"
+Need to save user preferences & last chosen directory
+Need to change delegation from using text files to arrays (have the threads choose which is their delegation via doing random between 1 and the processorCount)
+
+1.1.3.4\s
+Fixed: The program should no longer spam you with error messages if a null claiming occurs
+Changed: the claimant process is now much smaller and ready to be replaced by a self contained claimant system (not using text files)
+\e
+
 1.1.3.2\s
 Fixed a crash when trying to rename a file when the name to rename to already\nbc(210, 210, 210)				//bugfix (minor)
 exists as a file (e.g. file1 trying to rename to '1', but the file '1' already exists).\nbc(210, 210, 210)

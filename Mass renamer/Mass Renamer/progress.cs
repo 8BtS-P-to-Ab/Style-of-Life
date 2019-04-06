@@ -24,7 +24,7 @@ namespace Mass_Renamer
 
         private void progress_Load(object sender, EventArgs e)
         {
-            progressBar1.Value = MassRename.i;
+            progressBar1.Value = 0;
 
         }
     }

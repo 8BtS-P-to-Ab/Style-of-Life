@@ -70,9 +70,7 @@ namespace Mass_Renamer
                 {                                                                                           //|-Tloop for 'length' times 
                     pos[i] = word.IndexOf(listOfChars[i], StringComparison.OrdinalIgnoreCase);              //|-|----find the leftest letter to search and retrun its possition as pos
                 }                                                                                           //|-|L)
-            }
-            else
-            {                                                                                        //\c)otherwise if either letters or words are null
+            } else {                                                                                        //\c)otherwise if either letters or words are null
                 System.Diagnostics.Debug.WriteLine("from findLetterPos method, paramater is not set: "      //|
                     + !String.IsNullOrEmpty(letters) + " or " + !String.IsNullOrEmpty(word)                 //|
                     + " is false! (@line 62, Splitter.cs)");                                                //|--log an error
@@ -151,9 +149,7 @@ namespace Mass_Renamer
                     charCount[charI] = count;                                                                           //|-|----return the amount of times a match was found for this current letter check
                                                                                                                         //|-|
                 }                                                                                                       //|-|L)
-            }
-            else
-            {                                                                                                    //\c)otherwise if the string of letters to search for OR the input word to search through are null
+            } else {                                                                                                    //\c)otherwise if the string of letters to search for OR the input word to search through are null
                 System.Diagnostics.Debug.WriteLine("from countLetterReturnAmount method, paramater is not set: "        //|
                     + !String.IsNullOrEmpty(letters) + " or " + !String.IsNullOrEmpty(word)                             //|
                     + " is false! (@line 139, Splitter.cs)");                                                           //|--log the error
@@ -184,9 +180,7 @@ namespace Mass_Renamer
                     if (CharAtIndex(myChar, word, 0, "==") == true)                                                 //|-|
                     {                                                                                               //|-|--Tif the currnet character is at the start of the word
                         charStart[i] = "true";                                                                      //|-|--|----set that the i-th character is the first character in the word
-                    }
-                    else
-                    {                                                                                        //|-|--\c)otherwise, if the current character is not at the start of the word
+                    } else {                                                                                        //|-|--\c)otherwise, if the current character is not at the start of the word
                         charStart[i] = "false";                                                                     //|-|--|----set that the i-th character is not the first character in the word
                     }                                                                                               //|-|--|e)
                 }                                                                                                   //|-|L)
@@ -200,9 +194,7 @@ namespace Mass_Renamer
                             return listOfChars[iter];                                                               //|-|--|---|-----return the character which returned true
                         }                                                                                           //|-|--|---|e)
                                                                                                                     //|-|--|
-                    }
-                    else
-                    {                                                                                        //|-|--\c)otherwise, if the current character has no result
+                    } else {                                                                                        //|-|--\c)otherwise, if the current character has no result
                         System.Diagnostics.Debug.WriteLine("from FindGroupOfCharacters:" +                          //| |  |
                             "never got a reult for character " + iter + " (@line 183, Splitter.cs)");               //|-|--|----report an error occured
                         return "error";                                                                             //|-|--|----return error for error handling
@@ -213,9 +205,7 @@ namespace Mass_Renamer
                     "could not find any matches (@line 189, Splitter.cs)");                                         //|--return that a minor error occured
                 return "none";                                                                                      //|--if all data points in the array are "false" then return that the first character is not any of the searched characters
                                                                                                                     //|
-            }
-            else
-            {                                                                                                //\c)otherwise, if the string of chars to search for OR the input word to search through are null
+            } else {                                                                                                //\c)otherwise, if the string of chars to search for OR the input word to search through are null
                 System.Diagnostics.Debug.WriteLine("from findGroupOfCharacters method, paramater is not set: "      //|
                     + !String.IsNullOrEmpty(chars) + " or " + !String.IsNullOrEmpty(word)                           //|
                     + " is false! (@line 195, Splitter.cs)");                                                       //|--report an error occured
@@ -243,30 +233,22 @@ namespace Mass_Renamer
                     { return true; }                                                        //|-|--|----return true
                     else                                                                    //|-|--\c)otherwise
                     { return false; }                                                       //|-|--|e)--return false
-                }
-                else if (operatorType == "<")
-                {                                           //|-\c)otherwise, if the operator type is <
+                } else if (operatorType == "<") {                                           //|-\c)otherwise, if the operator type is <
                     if (index < indexToCheck)                                               //|-|--Tif the left most character match is < the index to check
                     { return true; }                                                        //|-|--|----return true
                     else                                                                    //|-|--\c)otherwise
                     { return false; }                                                       //|-|--|e)--return false
-                }
-                else if (operatorType == ">")
-                {                                           //|-\c)otherwise, if the operator type is <
+                } else if (operatorType == ">") {                                           //|-\c)otherwise, if the operator type is <
                     if (index > indexToCheck && index != -1)                                //|-|--Tif the left most character match is < the index to check
                     { return true; }                                                        //|-|--|----return true
                     else                                                                    //|-|--\c)otherwise
                     { return false; }                                                       //|-|--|e)--return false
-                }
-                else
-                {                                                                    //|-\c)otherwise
+                } else {                                                                    //|-\c)otherwise
                     System.Diagnostics.Debug.WriteLine("from charAtIndex method:" +         //| |
                         " could not read operator (@line246, Splitter.cs)");                //|-|---report error
                     return false;                                                           //|-|---return false
                 }                                                                           //|-|e)
-            }
-            else
-            {                                                                        //\c)otherwise if any of the parameters are null
+            } else {                                                                        //\c)otherwise if any of the parameters are null
                 System.Diagnostics.Debug.WriteLine("from charAtIndex method," +             //|
                     " paramater is not set: " + !String.IsNullOrEmpty(aChar) +              //|
                     " or " + !String.IsNullOrEmpty(word) + " or " +                         //|
@@ -392,13 +374,13 @@ namespace Mass_Renamer
                         list[i] = num[i];                   //| //|-|---add it to the list
                     }                                       //| //|-|e)
                 }                                           //|-//|L)
-                                                            //
+                                                                //
                 for (int i = 0; i < list.Length; i++)       //T-build a list of how often each number appears in the array
                 {                                           //| //Tloop for length 'list.Length'
                     freq[i] = CountIntAmount(list[i], num); //| //|--count how often list[i] number appears in the array
                                                             //| //|
                 }                                           //|-//|L)
-                                                            //
+                                                                //
                 freqC[1] = freq.Max();                          //get the most frequent number
                 for (int i = 0; i < freq.Length; i++)           //
                 {                                               //Tloop for length 'freq.Length'
@@ -451,9 +433,7 @@ namespace Mass_Renamer
                     if (previous == next)           //|
                     {                               //|-Tif the next item is the same as the current item
                         i++;                        //|-|---don't count, just go to the next item
-                    }
-                    else
-                    {                        //|-\c)otherwise, if the current item is not the same as the next (e.g. 1 != 3)
+                    } else {                        //|-\c)otherwise, if the current item is not the same as the next (e.g. 1 != 3)
                         count++;                    //|-|---count the previous set, but don't count the current set - yet
                         i++;                        //|-|---itterate to the next item
                                                     //|-|
@@ -520,11 +500,11 @@ namespace Mass_Renamer
             {                                                                               //Tif working with an alphabet addition type
                                                                                             //|
                 ushort[] LA = new ushort[1];                                                //|--initialize an array to hold the lettering code
-                LA[0] = (ushort)startPoint;                                                                  //|--set first letter to non-errornous code
+                LA[0] = (ushort)startPoint;                                                 //|--set first letter to non-errornous code
                 int.TryParse(limit, out int locLim);                                        //|--get the limit as an int
                 string conc = "";                                                           //|--initialize a string to hold the resultant code
                                                                                             //|
-                for (int c = startPoint; c < locLim; c++)                                            //|-Tloop untill the specified limit is reached
+                for (int c = startPoint; c < locLim; c++)                                   //|-Tloop untill the specified limit is reached
                 {                                                                           //|-|----for the first 26 loops, only single letters are returned (A-Z)
                     for (int ovi = 1; ovi <= LA.Length; ovi++)                              //|-|----meaning this for loop (ovi) is ignored for 26 of the above loop's loops
                     {                                                                       //|-|---Tloop for the amount of columns (letters) are currently in use
@@ -548,9 +528,7 @@ namespace Mass_Renamer
                     LA[0]++;                                                                //|-|----itterate the first letter's possition (i.e. change from "A" to "B")
                                                                                             //|-|
                 }                                                                           //|-|L)
-            }
-            else if (state == 1)
-            {                                                        //\c)if working with a alphanumeric addition type
+            } else if (state == 1) {                                                        //\c)if working with a alphanumeric addition type
                 int.TryParse(limit, out int l);                                             //|--get the limit as an int
                                                                                             //|
                 for (int i = startPoint; i <= l; i++)                                       //|
@@ -558,24 +536,18 @@ namespace Mass_Renamer
                     yield return i.ToString();                                              //|-|----simply return the loop number
                 }                                                                           //|-|L)
                                                                                             //|
-            }
-            else if (state == 2)
-            {                                                        //\cif working with a custom addition type
-                                                                     //|--unused space! Make a mod!
-                                                                     //|
-            }
-            else if (state == 3)
-            {                                                        //\cif additon type must return nothing (disabled)
+            } else if (state == 2) {                                                        //\cif working with a custom addition type
+                                                                                            //|--unused space! Make a mod!
+                                                                                            //|
+            } else if (state == 3) {                                                        //\cif additon type must return nothing (disabled)
                 int.TryParse(limit, out int l);                                             //|--get the limit as an int
                                                                                             //|
-                for (int i = startPoint; i <= l; i++)                                                //|
+                for (int i = startPoint; i <= l; i++)                                       //|
                 {                                                                           //|-Tloop for until the input limit is reached
                     yield return "";                                                        //|-|----return nothing
                 }                                                                           //|-|L)
                                                                                             //|
-            }
-            else
-            {                                                                        //\c)otherwise if the state is an invalid state
+            } else {                                                                        //\c)otherwise if the state is an invalid state
                 for (int f = 1; f <= 1; f++)                                                //|
                 {                                                                           //|
                     System.Diagnostics.Debug.WriteLine("from GetAdditionType: the" +        //|
